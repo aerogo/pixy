@@ -142,9 +142,25 @@ func compileNode(node *ASTNode) string {
 	}
 
 	if keyword == "h1" {
-		contents := strings.TrimLeft(node.Line[len("h1"):], " ")
-		contents = strings.Replace(contents, "\"", "\\\"", -1)
-		return write("\"<h1>" + contents + "</h1>\"")
+		var contents string
+
+		// No contents?
+		if node.Line == keyword {
+			return write("\"<h1></h1>\"")
+		}
+
+		if node.Line[len(keyword)] == '=' {
+			contents = strings.TrimLeft(node.Line[len("h1="):], " ")
+
+			code := write("\"<h1>\"") + "\n"
+			code += write(contents) + "\n"
+			code += write("\"</h1>\"")
+			return code
+		} else {
+			contents = strings.TrimLeft(node.Line[len("h1"):], " ")
+			contents = strings.Replace(contents, "\"", "\\\"", -1)
+			return write("\"<h1>" + contents + "</h1>\"")
+		}
 		// return write("\"<h1>\" + html.EscapeString(\"" + contents + "\") + \"</h1>\"")
 	}
 

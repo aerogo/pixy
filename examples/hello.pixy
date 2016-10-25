@@ -1,2 +1,2 @@
-component Hello
-	h1 Hello World
+component Hello(person string)
+	h1= person

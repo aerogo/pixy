@@ -17,7 +17,11 @@ func TestCompiler(t *testing.T) {
 }
 
 func TestExample(t *testing.T) {
-	ioutil.WriteFile("examples/hello.html", []byte(component.Hello()), 0644)
+	html := component.Hello("Pixy")
+	ioutil.WriteFile("examples/hello.html", []byte(html), 0644)
+
+	fmt.Println(html)
+	fmt.Println("--------------------------------------------------------------------")
 }
 
 func BenchmarkCompiler(b *testing.B) {
