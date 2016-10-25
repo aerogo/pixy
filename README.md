@@ -1,2 +1,6 @@
-# pixy
-Generates Go code from Pug templates.
+# Pixy
+Pixy generates Go code from Pixy templates.
+
+Benefits:
+* High-performance template execution
+* Static typing checks

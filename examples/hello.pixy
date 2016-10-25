@@ -1,0 +1,5 @@
+component Hello(person string)
+	header
+		h1= "Hello " + person.Name + "!"
+	Welcome()
+	img
