@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -17,6 +18,13 @@ type ASTNode struct {
 	Children []*ASTNode
 	Parent   *ASTNode
 	Indent   int
+}
+
+var compactCode *regexp.Regexp
+
+// init
+func init() {
+	compactCode = regexp.MustCompile("\\n{2,}")
 }
 
 // BuildAST returns a tree structure if you feed it with indentantion based source code.
@@ -72,19 +80,6 @@ func BuildAST(src string) *ASTNode {
 	return ast
 }
 
-// CompileFile compiles a Pixy template from fileIn and returns the Go code as a string.
-func CompileFile(fileIn string, includeHeader bool) string {
-	srcBytes, readErr := ioutil.ReadFile(fileIn)
-
-	if readErr != nil {
-		color.Red("Can't read from " + fileIn)
-		return ""
-	}
-
-	src := string(srcBytes)
-	return Compile(src, includeHeader)
-}
-
 // CompileFileAndSave compiles a Pixy template from fileIn and writes the
 // resulting Go code to fileOut. It also returns the Go code as a string.
 func CompileFileAndSave(fileIn string, fileOut string) string {
@@ -98,6 +93,19 @@ func CompileFileAndSave(fileIn string, fileOut string) string {
 	return code
 }
 
+// CompileFile compiles a Pixy template from fileIn and returns the Go code as a string.
+func CompileFile(fileIn string, includeHeader bool) string {
+	srcBytes, readErr := ioutil.ReadFile(fileIn)
+
+	if readErr != nil {
+		color.Red("Can't read from " + fileIn)
+		return ""
+	}
+
+	src := string(srcBytes)
+	return Compile(src, includeHeader)
+}
+
 // Compile compiles a Pixy template as a string and returns Go code.
 func Compile(src string, includeHeader bool) string {
 	ast := BuildAST(src)
@@ -107,12 +115,37 @@ func Compile(src string, includeHeader bool) string {
 		return buildHeader(code) + code
 	}
 
-	return code
+	return optimize(code)
 }
 
 // buildHeader ...
 func buildHeader(code string) string {
 	return "package " + PackageName + "\n\n"
+}
+
+const writeStringCall = "_b.WriteString(\""
+
+// optimize combines multiple WriteString calls to one.
+func optimize(code string) string {
+	lines := strings.Split(code, "\n")
+	lastString := ""
+
+	for index, line := range lines {
+		pos := strings.Index(line, writeStringCall)
+
+		if pos != -1 {
+			lastString += line[pos+len(writeStringCall) : len(line)-2]
+			lines[index] = ""
+			continue
+		}
+
+		if len(lastString) > 0 {
+			lines[index] = "\t" + writeStringCall + lastString + "\")\n" + line
+			lastString = ""
+		}
+	}
+
+	return compactCode.ReplaceAllString(strings.Join(lines, "\n"), "\n")
 }
 
 // Compiles the children of a Pixy ASTNode.
@@ -169,6 +202,21 @@ func compileNode(node *ASTNode) string {
 	}
 
 	var contents string
+	attributes := make(map[string]string)
+
+	tag := func() string {
+		if len(attributes) == 0 {
+			return writeString("<" + keyword + ">")
+		}
+
+		code := writeString("<" + keyword + " ")
+		for key, value := range attributes {
+			code += writeString(key + "=")
+			code += write(value)
+		}
+		code += writeString(">")
+		return code
+	}
 
 	// No contents?
 	if node.Line == keyword {
@@ -178,24 +226,38 @@ func compileNode(node *ASTNode) string {
 			code += writeString("<!DOCTYPE html>")
 		}
 
-		code += writeString("<" + keyword + ">")
+		code += tag()
 		code += compileChildren(node)
 		code += writeString("</" + keyword + ">")
 		return code
 	}
 
 	escapeInput := true
-	equalIndex := len(keyword)
+	cursor := len(keyword)
 
-	if node.Line[equalIndex] == '!' {
-		escapeInput = false
-		equalIndex++
+	if node.Line[cursor] == '#' {
+		cursor++
+		start := cursor
+		analyze := node.Line[cursor:]
+		for index, letter := range analyze {
+			if !unicode.IsLetter(letter) && !unicode.IsDigit(letter) && letter != '-' {
+				cursor += index
+				id := node.Line[start:cursor]
+				attributes["id"] = "\"" + id + "\""
+				break
+			}
+		}
 	}
 
-	if node.Line[equalIndex] == '=' {
-		contents = strings.TrimLeft(node.Line[equalIndex+1:], " ")
+	if node.Line[cursor] == '!' {
+		escapeInput = false
+		cursor++
+	}
 
-		code := writeString("<" + keyword + ">")
+	if node.Line[cursor] == '=' {
+		contents = strings.TrimLeft(node.Line[cursor+1:], " ")
+
+		code := tag()
 
 		if escapeInput {
 			code += write("html.EscapeString(" + contents + ")")
@@ -210,7 +272,7 @@ func compileNode(node *ASTNode) string {
 
 	contents = strings.TrimLeft(node.Line[len(keyword):], " ")
 	contents = strings.Replace(contents, "\"", "\\\"", -1)
-	code := writeString("<" + keyword + ">")
+	code := tag()
 	code += writeString(contents)
 	code += compileChildren(node)
 	code += writeString("</" + keyword + ">")
