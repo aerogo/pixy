@@ -1,2 +1,2 @@
 component Hello(person string)
-	h1= person
+	h1= "Hello " + person

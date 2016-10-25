@@ -85,7 +85,15 @@ func Compile(src string) string {
 	ast := BuildAST(src)
 	dir, _ := os.Getwd()
 	packageName := filepath.Base(dir)
-	return "package " + packageName + "\n\nimport \"bytes\"\n\n" + compileChildren(ast)
+	code := compileChildren(ast)
+	htmlPackageUsed := strings.Index(code, "html.EscapeString(") != -1
+	packages := []string{"bytes"}
+
+	if htmlPackageUsed {
+		packages = append(packages, "html")
+	}
+
+	return "package " + packageName + "\n\nimport (\n\t\"" + strings.Join(packages, "\"\n\t\"") + "\"\n)\n\n" + code
 }
 
 // Compiles the children of a Pixy ASTNode.
@@ -134,7 +142,8 @@ func compileNode(node *ASTNode) string {
 			node.Line += "()"
 		}
 
-		return "func " + node.Line[len("component "):] + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
+		comment := "// " + node.Line[len(keyword)+1:strings.Index(node.Line, "(")] + " component"
+		return comment + "\nfunc " + node.Line[len("component "):] + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
 	}
 
 	if keyword == "header" {
@@ -146,21 +155,35 @@ func compileNode(node *ASTNode) string {
 
 		// No contents?
 		if node.Line == keyword {
-			return write("\"<h1></h1>\"")
+			return write("\"<" + keyword + "></" + keyword + ">\"")
 		}
 
-		if node.Line[len(keyword)] == '=' {
-			contents = strings.TrimLeft(node.Line[len("h1="):], " ")
+		escapeInput := true
+		equalIndex := len(keyword)
 
-			code := write("\"<h1>\"") + "\n"
-			code += write(contents) + "\n"
-			code += write("\"</h1>\"")
+		if node.Line[equalIndex] == '!' {
+			escapeInput = false
+			equalIndex++
+		}
+
+		if node.Line[equalIndex] == '=' {
+			contents = strings.TrimLeft(node.Line[equalIndex+1:], " ")
+
+			code := write("\"<"+keyword+">\"") + "\n"
+
+			if escapeInput {
+				code += write("html.EscapeString("+contents+")") + "\n"
+			} else {
+				code += write(contents) + "\n"
+			}
+
+			code += write("\"</" + keyword + ">\"")
 			return code
-		} else {
-			contents = strings.TrimLeft(node.Line[len("h1"):], " ")
-			contents = strings.Replace(contents, "\"", "\\\"", -1)
-			return write("\"<h1>" + contents + "</h1>\"")
 		}
+
+		contents = strings.TrimLeft(node.Line[len(keyword):], " ")
+		contents = strings.Replace(contents, "\"", "\\\"", -1)
+		return write("\"<" + keyword + ">" + contents + "</" + keyword + ">\"")
 		// return write("\"<h1>\" + html.EscapeString(\"" + contents + "\") + \"</h1>\"")
 	}
 
