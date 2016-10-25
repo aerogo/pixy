@@ -112,14 +112,7 @@ func Compile(src string, includeHeader bool) string {
 
 // buildHeader ...
 func buildHeader(code string) string {
-	htmlPackageUsed := strings.Index(code, "html.EscapeString(") != -1
-	packages := []string{"bytes"}
-
-	if htmlPackageUsed {
-		packages = append(packages, "html")
-	}
-
-	return "package " + PackageName + "\n\nimport (\n\t\"" + strings.Join(packages, "\"\n\t\"") + "\"\n)\n\n"
+	return "package " + PackageName + "\n\n"
 }
 
 // Compiles the children of a Pixy ASTNode.
@@ -127,17 +120,21 @@ func compileChildren(node *ASTNode) string {
 	output := ""
 
 	for _, child := range node.Children {
-		code := compileNode(child)
+		code := strings.TrimSpace(compileNode(child))
 		if len(code) > 0 {
 			output += code + "\n"
 		}
 	}
 
-	return strings.TrimSpace(output)
+	return output
 }
 
 func write(s string) string {
-	return "_b.WriteString(" + s + ")"
+	return "_b.WriteString(" + s + ")\n"
+}
+
+func writeString(s string) string {
+	return write("\"" + s + "\"")
 }
 
 // Compiles a single Pixy ASTNode.
@@ -160,7 +157,7 @@ func compileNode(node *ASTNode) string {
 	}
 
 	if keyword == "component" {
-		functionBody := "var _b bytes.Buffer\n" + compileChildren(node) + "\nreturn _b.String()"
+		functionBody := "var _b bytes.Buffer\n" + compileChildren(node) + "return _b.String()"
 		lines := strings.Split(functionBody, "\n")
 
 		if !strings.HasSuffix(node.Line, ")") {
@@ -171,46 +168,54 @@ func compileNode(node *ASTNode) string {
 		return comment + "\nfunc " + node.Line[len("component "):] + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
 	}
 
-	if keyword == "header" {
-		return compileChildren(node)
+	var contents string
+
+	// No contents?
+	if node.Line == keyword {
+		code := ""
+
+		if keyword == "html" {
+			code += writeString("<!DOCTYPE html>")
+		}
+
+		code += writeString("<" + keyword + ">")
+		code += compileChildren(node)
+		code += writeString("</" + keyword + ">")
+		return code
 	}
 
-	if keyword == "h1" {
-		var contents string
+	escapeInput := true
+	equalIndex := len(keyword)
 
-		// No contents?
-		if node.Line == keyword {
-			return write("\"<" + keyword + "></" + keyword + ">\"")
-		}
-
-		escapeInput := true
-		equalIndex := len(keyword)
-
-		if node.Line[equalIndex] == '!' {
-			escapeInput = false
-			equalIndex++
-		}
-
-		if node.Line[equalIndex] == '=' {
-			contents = strings.TrimLeft(node.Line[equalIndex+1:], " ")
-
-			code := write("\"<"+keyword+">\"") + "\n"
-
-			if escapeInput {
-				code += write("html.EscapeString("+contents+")") + "\n"
-			} else {
-				code += write(contents) + "\n"
-			}
-
-			code += write("\"</" + keyword + ">\"")
-			return code
-		}
-
-		contents = strings.TrimLeft(node.Line[len(keyword):], " ")
-		contents = strings.Replace(contents, "\"", "\\\"", -1)
-		return write("\"<" + keyword + ">" + contents + "</" + keyword + ">\"")
-		// return write("\"<h1>\" + html.EscapeString(\"" + contents + "\") + \"</h1>\"")
+	if node.Line[equalIndex] == '!' {
+		escapeInput = false
+		equalIndex++
 	}
 
-	return "// Parse error: [" + node.Line + "]"
+	if node.Line[equalIndex] == '=' {
+		contents = strings.TrimLeft(node.Line[equalIndex+1:], " ")
+
+		code := writeString("<" + keyword + ">")
+
+		if escapeInput {
+			code += write("html.EscapeString(" + contents + ")")
+		} else {
+			code += write(contents)
+		}
+
+		code += compileChildren(node)
+		code += writeString("</" + keyword + ">")
+		return code
+	}
+
+	contents = strings.TrimLeft(node.Line[len(keyword):], " ")
+	contents = strings.Replace(contents, "\"", "\\\"", -1)
+	code := writeString("<" + keyword + ">")
+	code += writeString(contents)
+	code += compileChildren(node)
+	code += writeString("</" + keyword + ">")
+	return code
+	// return write("\"<h1>\" + html.EscapeString(\"" + contents + "\") + \"</h1>\"")
+
+	// return "// Parse error: [" + node.Line + "]"
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -47,6 +48,14 @@ func main() {
 
 	if writeErr != nil {
 		color.Red("Can't write to " + outputFile)
+		return
+	}
+
+	cmd := exec.Command("goimports", "-w", outputFile)
+	goimportsErr := cmd.Start()
+
+	if goimportsErr != nil {
+		color.Red("Couldn't execute goimports")
 		return
 	}
 
