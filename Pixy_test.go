@@ -4,13 +4,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"testing"
+
+	component "./examples"
 )
 
 func TestCompiler(t *testing.T) {
-	srcBytes, _ := ioutil.ReadFile("examples/hello.pixy")
-	src := string(srcBytes)
-	code := Compile(src)
+	code := CompileFile("examples/hello.pixy", "examples/hello.go")
+
+	fmt.Println("--------------------------------------------------------------------")
 	fmt.Println(code)
+	fmt.Println("--------------------------------------------------------------------")
+}
+
+func TestExample(t *testing.T) {
+	ioutil.WriteFile("examples/hello.html", []byte(component.Hello()), 0644)
 }
 
 func BenchmarkCompiler(b *testing.B) {

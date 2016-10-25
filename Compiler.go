@@ -1,7 +1,10 @@
 package pixy
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 	"unicode"
 )
@@ -67,20 +70,25 @@ func BuildAST(src string) *ASTNode {
 	return ast
 }
 
-// CompileFile compiles a Pixy template to Go code.
-func CompileFile(fileIn string, fileOut string) {
+// CompileFile compiles a Pixy template from fileIn and writes the
+// resulting Go code to fileOut. It also returns the Go code as a string.
+func CompileFile(fileIn string, fileOut string) string {
 	srcBytes, _ := ioutil.ReadFile(fileIn)
 	src := string(srcBytes)
 	code := Compile(src)
 	ioutil.WriteFile(fileOut, []byte(code), 0644)
+	return code
 }
 
 // Compile compiles a Pixy template as a string and returns Go code.
 func Compile(src string) string {
 	ast := BuildAST(src)
-	return "package main\n\n" + compileChildren(ast)
+	dir, _ := os.Getwd()
+	packageName := filepath.Base(dir)
+	return "package " + packageName + "\n\nimport \"bytes\"\n\n" + compileChildren(ast)
 }
 
+// Compiles the children of a Pixy ASTNode.
 func compileChildren(node *ASTNode) string {
 	output := ""
 
@@ -94,25 +102,51 @@ func compileChildren(node *ASTNode) string {
 	return strings.TrimSpace(output)
 }
 
+func write(s string) string {
+	return "_b.WriteString(" + s + ")"
+}
+
 // Compiles a single Pixy ASTNode.
 func compileNode(node *ASTNode) string {
-	for _, firstLetter := range node.Line {
-		if unicode.IsLetter(firstLetter) && unicode.IsUpper(firstLetter) {
-			return node.Line
+	var keyword string
+
+	for i, letter := range node.Line {
+		// Function calls
+		if i == 0 && unicode.IsLetter(letter) && unicode.IsUpper(letter) {
+			return write(node.Line)
 		}
 
-		break
+		if len(keyword) == 0 && !unicode.IsLetter(letter) && !unicode.IsDigit(letter) {
+			keyword = string([]rune(node.Line)[:i])
+			fmt.Println("KEYWORD", keyword)
+		}
 	}
 
-	if strings.HasPrefix(node.Line, "component ") {
-		functionBody := compileChildren(node)
+	if len(keyword) == 0 {
+		keyword = node.Line
+	}
+
+	if keyword == "component" {
+		functionBody := "var _b bytes.Buffer\n" + compileChildren(node) + "\nreturn _b.String()"
 		lines := strings.Split(functionBody, "\n")
-		return "func " + node.Line[len("component "):] + " {\n\t" + strings.Join(lines, "\n\t") + "\n}"
+
+		if !strings.HasSuffix(node.Line, ")") {
+			node.Line += "()"
+		}
+
+		return "func " + node.Line[len("component "):] + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
 	}
 
-	if node.Line == "img" {
-		return "<img src=''>"
+	if keyword == "header" {
+		return compileChildren(node)
 	}
 
-	return ""
+	if keyword == "h1" {
+		contents := strings.TrimLeft(node.Line[len("h1"):], " ")
+		contents = strings.Replace(contents, "\"", "\\\"", -1)
+		return write("\"<h1>" + contents + "</h1>\"")
+		// return write("\"<h1>\" + html.EscapeString(\"" + contents + "\") + \"</h1>\"")
+	}
+
+	return "// Parse error: [" + node.Line + "]"
 }
