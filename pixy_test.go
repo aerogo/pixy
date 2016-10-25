@@ -1,4 +1,4 @@
-package pixy
+package main
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 )
 
 func TestCompiler(t *testing.T) {
-	code := CompileFile("examples/hello.pixy", "examples/hello.go")
+	code := CompileFileAndSave("examples/hello.pixy", "examples/hello.go")
 
 	fmt.Println("--------------------------------------------------------------------")
 	fmt.Println(code)
@@ -30,6 +30,6 @@ func BenchmarkCompiler(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		Compile(src)
+		Compile(src, true)
 	}
 }

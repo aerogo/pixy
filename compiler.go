@@ -1,13 +1,15 @@
-package pixy
+package main
 
 import (
-	"fmt"
 	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strings"
 	"unicode"
+
+	"github.com/fatih/color"
 )
+
+// PackageName contains the package name used in the generated .go files.
+var PackageName = "components"
 
 // ASTNode ...
 type ASTNode struct {
@@ -70,22 +72,46 @@ func BuildAST(src string) *ASTNode {
 	return ast
 }
 
-// CompileFile compiles a Pixy template from fileIn and writes the
-// resulting Go code to fileOut. It also returns the Go code as a string.
-func CompileFile(fileIn string, fileOut string) string {
-	srcBytes, _ := ioutil.ReadFile(fileIn)
+// CompileFile compiles a Pixy template from fileIn and returns the Go code as a string.
+func CompileFile(fileIn string, includeHeader bool) string {
+	srcBytes, readErr := ioutil.ReadFile(fileIn)
+
+	if readErr != nil {
+		color.Red("Can't read from " + fileIn)
+		return ""
+	}
+
 	src := string(srcBytes)
-	code := Compile(src)
-	ioutil.WriteFile(fileOut, []byte(code), 0644)
+	return Compile(src, includeHeader)
+}
+
+// CompileFileAndSave compiles a Pixy template from fileIn and writes the
+// resulting Go code to fileOut. It also returns the Go code as a string.
+func CompileFileAndSave(fileIn string, fileOut string) string {
+	code := CompileFile(fileIn, true)
+	writeErr := ioutil.WriteFile(fileOut, []byte(code), 0644)
+
+	if writeErr != nil {
+		color.Red("Can't write to " + fileOut)
+	}
+
 	return code
 }
 
 // Compile compiles a Pixy template as a string and returns Go code.
-func Compile(src string) string {
+func Compile(src string, includeHeader bool) string {
 	ast := BuildAST(src)
-	dir, _ := os.Getwd()
-	packageName := filepath.Base(dir)
 	code := compileChildren(ast)
+
+	if includeHeader {
+		return buildHeader(code) + code
+	}
+
+	return code
+}
+
+// buildHeader ...
+func buildHeader(code string) string {
 	htmlPackageUsed := strings.Index(code, "html.EscapeString(") != -1
 	packages := []string{"bytes"}
 
@@ -93,7 +119,7 @@ func Compile(src string) string {
 		packages = append(packages, "html")
 	}
 
-	return "package " + packageName + "\n\nimport (\n\t\"" + strings.Join(packages, "\"\n\t\"") + "\"\n)\n\n" + code
+	return "package " + PackageName + "\n\nimport (\n\t\"" + strings.Join(packages, "\"\n\t\"") + "\"\n)\n\n"
 }
 
 // Compiles the children of a Pixy ASTNode.
@@ -126,7 +152,6 @@ func compileNode(node *ASTNode) string {
 
 		if len(keyword) == 0 && !unicode.IsLetter(letter) && !unicode.IsDigit(letter) {
 			keyword = string([]rune(node.Line)[:i])
-			fmt.Println("KEYWORD", keyword)
 		}
 	}
 

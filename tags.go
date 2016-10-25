@@ -1,4 +1,4 @@
-package pixy
+package main
 
 var htmlTags []string
 
