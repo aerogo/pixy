@@ -1,20 +1,37 @@
-component NoParameters
-	h1 Parameterless component
+component NoParams
+	h1 No parameters.
 
-component OneParameter(test string)
-	h1= test
+component OneParam(text string)
+	h1= text
 
-component ElementID
-	h1#element-id Element with an ID
+component ID
+	h1#eye-dee Element with an ID.
 
-component ElementIDExpression(test string)
-	h1#element-id= test
+component IDAndExpression(text string)
+	h1#eye-dee= text
 
-component ElementIDDirectExpression(test string)
-	h1#element-id!= test
+component IDAndDirectExpression(text string)
+	h1#eye-dee!= text
 
-component ElementClass
-	h1.my-class Element with a class
+component Class
+	h1.class Element with a class.
+
+component MultipleClasses
+	h1.class-1.class-2 Element with multiple classes.
+
+component IDAndMultipleClasses
+	h1#eye-dee.class-1.class-2 Element with multiple classes.
+
+component Everything(text string)
+	h1#eye-dee.class-1.class-2!= text
+
+component RenderOtherComponent
+	NoParams
+	OneParam("Hello")
+
+component Comments
+	// "I think, therefore I am."
+	// -- René Descartes
 
 component Layout
 	html
@@ -22,7 +39,3 @@ component Layout
 			title Title
 		body
 			main Content
-
-component RenderOtherComponent
-	ElementID
-	h1 Test

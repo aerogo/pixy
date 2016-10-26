@@ -12,7 +12,11 @@ var PackageName = "components"
 
 // Builds the file header.
 func buildHeader(code string) string {
-	return "package " + PackageName + "\n\n"
+	header := "package " + PackageName + "\n\n"
+	header += "type renderer struct{}\n\n"
+	header += "// Render methods allow you to render your components.\n"
+	header += "var Render renderer\n\n"
+	return header
 }
 
 // Compiles the children of a Pixy ASTNode.
@@ -50,9 +54,15 @@ func compileNode(node *ASTNode) string {
 				node.Line += "()"
 			}
 
-			return write(node.Line)
+			return write("Render." + node.Line)
 		}
 
+		// Comments
+		if i == 1 && node.Line[0] == '/' && node.Line[1] == '/' {
+			return ""
+		}
+
+		// Find keyword
 		if len(keyword) == 0 && !unicode.IsLetter(letter) && !unicode.IsDigit(letter) {
 			keyword = string([]rune(node.Line)[:i])
 		}
@@ -76,22 +86,35 @@ func compileNode(node *ASTNode) string {
 		}
 
 		comment := "// " + node.Line[len(keyword)+1:strings.Index(node.Line, "(")] + " component"
-		return comment + "\nfunc " + node.Line[len("component "):] + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
+		return comment + "\nfunc (r *renderer) " + node.Line[len("component "):] + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
 	}
 
 	var contents string
 	attributes := make(map[string]string)
 
 	tag := func() string {
-		if len(attributes) == 0 {
+		numAttributes := len(attributes)
+
+		if numAttributes == 0 {
 			return writeString("<" + keyword + ">")
 		}
 
 		code := writeString("<" + keyword + " ")
+		count := 1
+
 		for key, value := range attributes {
-			code += writeString(key + "=")
+			code += writeString(key + "='")
 			code += write(value)
+
+			if count == numAttributes {
+				code += writeString("'")
+			} else {
+				code += writeString("' ")
+			}
+
+			count++
 		}
+
 		code += writeString(">")
 		return code
 	}
@@ -112,33 +135,60 @@ func compileNode(node *ASTNode) string {
 
 	escapeInput := true
 	cursor := len(keyword)
-	char := node.Line[cursor]
 
-	if char == '#' || char == '.' {
-		cursor++
-		start := cursor
-		analyze := node.Line[cursor:]
-		for index, letter := range analyze {
+	expect := func(expected byte, callback func(int, string)) bool {
+		char := node.Line[cursor]
+
+		if char == expected {
+			cursor++
+			start := cursor
+			remaining := node.Line[cursor:]
+
+			callback(start, remaining)
+			return true
+		}
+
+		return false
+	}
+
+	// ID
+	expect('#', func(start int, remaining string) {
+		for index, letter := range remaining {
 			if !unicode.IsLetter(letter) && !unicode.IsDigit(letter) && letter != '-' {
 				cursor += index
 				id := node.Line[start:cursor]
-
-				if char == '#' {
-					attributes["id"] = "\"" + id + "\""
-				} else {
-					attributes["class"] = "\"" + id + "\""
-				}
-
+				attributes["id"] = "\"" + id + "\""
 				break
 			}
 		}
+	})
+
+	// Classes
+	var classes []string
+	for expect('.', func(start int, remaining string) {
+		for index, letter := range remaining {
+			if !unicode.IsLetter(letter) && !unicode.IsDigit(letter) && letter != '-' {
+				cursor += index
+				name := node.Line[start:cursor]
+				classes = append(classes, name)
+				break
+			}
+		}
+	}) {
+		// Empty loop
 	}
 
+	if len(classes) > 0 {
+		attributes["class"] = "\"" + strings.Join(classes, " ") + "\""
+	}
+
+	// Bypass HTML escaping
 	if node.Line[cursor] == '!' {
 		escapeInput = false
 		cursor++
 	}
 
+	// Expressions
 	if node.Line[cursor] == '=' {
 		contents = strings.TrimLeft(node.Line[cursor+1:], " ")
 
@@ -155,14 +205,11 @@ func compileNode(node *ASTNode) string {
 		return code
 	}
 
-	contents = strings.TrimLeft(node.Line[len(keyword):], " ")
+	contents = strings.TrimLeft(node.Line[cursor:], " ")
 	contents = strings.Replace(contents, "\"", "\\\"", -1)
 	code := tag()
 	code += writeString(contents)
 	code += compileChildren(node)
 	code += writeString("</" + keyword + ">")
 	return code
-	// return write("\"<h1>\" + html.EscapeString(\"" + contents + "\") + \"</h1>\"")
-
-	// return "// Parse error: [" + node.Line + "]"
 }
