@@ -55,8 +55,14 @@ func main() {
 	goimportsErr := cmd.Start()
 
 	if goimportsErr != nil {
-		color.Red("Couldn't execute goimports")
-		return
+		workspaceBin := os.Getenv("GOPATH") + string(os.PathSeparator) + "bin" + string(os.PathSeparator)
+		cmd = exec.Command(workspaceBin+"goimports", "-w", outputFile)
+		goimportsErr = cmd.Start()
+
+		if goimportsErr != nil {
+			color.Red("Couldn't execute goimports")
+			return
+		}
 	}
 
 	fmt.Println()

@@ -1,0 +1,25 @@
+component NoParameters
+	h1 Parameterless component
+
+component OneParameter(test string)
+	h1= test
+
+component ElementID
+	h1#element-id Element with an ID
+
+component ElementIDExpression(test string)
+	h1#element-id= test
+
+component ElementIDDirectExpression(test string)
+	h1#element-id!= test
+
+component Layout
+	html
+		head
+			title Title
+		body
+			main Content
+
+component RenderOtherComponent
+	Header
+	h1 Test

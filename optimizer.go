@@ -9,6 +9,11 @@ var compactCode *regexp.Regexp
 
 const writeStringCall = "_b.WriteString(\""
 
+// init
+func init() {
+	compactCode = regexp.MustCompile("\\n{2,}")
+}
+
 // optimize combines multiple WriteString calls to one.
 func optimize(code string) string {
 	lines := strings.Split(code, "\n")

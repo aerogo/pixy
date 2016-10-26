@@ -1,8 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
-	"regexp"
 	"strings"
 	"unicode"
 
@@ -12,111 +10,7 @@ import (
 // PackageName contains the package name used in the generated .go files.
 var PackageName = "components"
 
-// ASTNode ...
-type ASTNode struct {
-	Line     string
-	Children []*ASTNode
-	Parent   *ASTNode
-	Indent   int
-}
-
-// init
-func init() {
-	compactCode = regexp.MustCompile("\\n{2,}")
-}
-
-// BuildAST returns a tree structure if you feed it with indentantion based source code.
-func BuildAST(src string) *ASTNode {
-	ast := new(ASTNode)
-	ast.Indent = -1
-
-	block := ast
-	lastNode := ast
-
-	lines := strings.Split(strings.Replace(src, "\r\n", "\n", -1), "\n")
-
-	for _, line := range lines {
-		// Ignore empty lines
-		if len(strings.TrimSpace(line)) == 0 {
-			continue
-		}
-
-		// Indentation
-		indent := 0
-		for indent < len(line) {
-			if line[indent] != '\t' {
-				break
-			}
-
-			indent++
-		}
-
-		if indent != 0 {
-			line = line[indent:]
-		}
-
-		node := new(ASTNode)
-		node.Line = line
-		node.Indent = indent
-
-		if node.Indent == block.Indent+1 {
-			// OK
-		} else if node.Indent == block.Indent+2 {
-			block = lastNode
-		} else if node.Indent == block.Indent {
-			block = block.Parent
-		} else {
-			panic("Invalid indentation")
-		}
-
-		node.Parent = block
-		block.Children = append(block.Children, node)
-
-		lastNode = node
-	}
-
-	return ast
-}
-
-// CompileFileAndSave compiles a Pixy template from fileIn and writes the
-// resulting Go code to fileOut. It also returns the Go code as a string.
-func CompileFileAndSave(fileIn string, fileOut string) string {
-	code := CompileFile(fileIn, true)
-	writeErr := ioutil.WriteFile(fileOut, []byte(code), 0644)
-
-	if writeErr != nil {
-		color.Red("Can't write to " + fileOut)
-	}
-
-	return code
-}
-
-// CompileFile compiles a Pixy template from fileIn and returns the Go code as a string.
-func CompileFile(fileIn string, includeHeader bool) string {
-	srcBytes, readErr := ioutil.ReadFile(fileIn)
-
-	if readErr != nil {
-		color.Red("Can't read from " + fileIn)
-		return ""
-	}
-
-	src := string(srcBytes)
-	return Compile(src, includeHeader)
-}
-
-// Compile compiles a Pixy template as a string and returns Go code.
-func Compile(src string, includeHeader bool) string {
-	ast := BuildAST(src)
-	code := compileChildren(ast)
-
-	if includeHeader {
-		return buildHeader(code) + code
-	}
-
-	return optimize(code)
-}
-
-// buildHeader ...
+// Builds the file header.
 func buildHeader(code string) string {
 	return "package " + PackageName + "\n\n"
 }
@@ -135,15 +29,17 @@ func compileChildren(node *ASTNode) string {
 	return output
 }
 
-func write(s string) string {
-	return "_b.WriteString(" + s + ")\n"
+// Writes expression to the output.
+func write(expression string) string {
+	return "_b.WriteString(" + expression + ")\n"
 }
 
+// Writes s interpreted as a string (not an expression) to the output.
 func writeString(s string) string {
 	return write("\"" + s + "\"")
 }
 
-// Compiles a single Pixy ASTNode.
+// Compiles a single ASTNode.
 func compileNode(node *ASTNode) string {
 	var keyword string
 
@@ -165,6 +61,11 @@ func compileNode(node *ASTNode) string {
 	if keyword == "component" {
 		functionBody := "var _b bytes.Buffer\n" + compileChildren(node) + "return _b.String()"
 		lines := strings.Split(functionBody, "\n")
+
+		if strings.HasSuffix(node.Line, "()") {
+			color.Red(node.Line)
+			color.Red("Components without parameters should not include parentheses in the definition.")
+		}
 
 		if !strings.HasSuffix(node.Line, ")") {
 			node.Line += "()"
