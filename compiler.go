@@ -46,6 +46,10 @@ func compileNode(node *ASTNode) string {
 	for i, letter := range node.Line {
 		// Function calls
 		if i == 0 && unicode.IsLetter(letter) && unicode.IsUpper(letter) {
+			if !strings.HasSuffix(node.Line, ")") {
+				node.Line += "()"
+			}
+
 			return write(node.Line)
 		}
 
