@@ -20,8 +20,6 @@ type ASTNode struct {
 	Indent   int
 }
 
-var compactCode *regexp.Regexp
-
 // init
 func init() {
 	compactCode = regexp.MustCompile("\\n{2,}")
@@ -35,7 +33,7 @@ func BuildAST(src string) *ASTNode {
 	block := ast
 	lastNode := ast
 
-	lines := strings.Split(src, "\n")
+	lines := strings.Split(strings.Replace(src, "\r\n", "\n", -1), "\n")
 
 	for _, line := range lines {
 		// Ignore empty lines
@@ -121,31 +119,6 @@ func Compile(src string, includeHeader bool) string {
 // buildHeader ...
 func buildHeader(code string) string {
 	return "package " + PackageName + "\n\n"
-}
-
-const writeStringCall = "_b.WriteString(\""
-
-// optimize combines multiple WriteString calls to one.
-func optimize(code string) string {
-	lines := strings.Split(code, "\n")
-	lastString := ""
-
-	for index, line := range lines {
-		pos := strings.Index(line, writeStringCall)
-
-		if pos != -1 {
-			lastString += line[pos+len(writeStringCall) : len(line)-2]
-			lines[index] = ""
-			continue
-		}
-
-		if len(lastString) > 0 {
-			lines[index] = "\t" + writeStringCall + lastString + "\")\n" + line
-			lastString = ""
-		}
-	}
-
-	return compactCode.ReplaceAllString(strings.Join(lines, "\n"), "\n")
 }
 
 // Compiles the children of a Pixy ASTNode.

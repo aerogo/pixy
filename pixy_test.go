@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"testing"
-
-	components "./examples"
 )
 
 func TestCompiler(t *testing.T) {
@@ -17,7 +15,7 @@ func TestCompiler(t *testing.T) {
 }
 
 func TestExample(t *testing.T) {
-	html := components.Hello("Pixy")
+	html := Hello("Pixy")
 	ioutil.WriteFile("examples/hello.html", []byte(html), 0644)
 
 	fmt.Println(html)
