@@ -112,8 +112,9 @@ func compileNode(node *ASTNode) string {
 
 	escapeInput := true
 	cursor := len(keyword)
+	char := node.Line[cursor]
 
-	if node.Line[cursor] == '#' {
+	if char == '#' || char == '.' {
 		cursor++
 		start := cursor
 		analyze := node.Line[cursor:]
@@ -121,7 +122,13 @@ func compileNode(node *ASTNode) string {
 			if !unicode.IsLetter(letter) && !unicode.IsDigit(letter) && letter != '-' {
 				cursor += index
 				id := node.Line[start:cursor]
-				attributes["id"] = "\"" + id + "\""
+
+				if char == '#' {
+					attributes["id"] = "\"" + id + "\""
+				} else {
+					attributes["class"] = "\"" + id + "\""
+				}
+
 				break
 			}
 		}

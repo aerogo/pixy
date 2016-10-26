@@ -13,7 +13,7 @@ import (
 
 const (
 	pixyExtension   = ".pixy"
-	outputName      = "components"
+	outputName      = "❖"
 	outputExtension = ".go"
 )
 

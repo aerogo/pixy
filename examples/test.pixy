@@ -13,6 +13,9 @@ component ElementIDExpression(test string)
 component ElementIDDirectExpression(test string)
 	h1#element-id!= test
 
+component ElementClass
+	h1.my-class Element with a class
+
 component Layout
 	html
 		head
