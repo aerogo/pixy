@@ -66,5 +66,5 @@ func main() {
 	}
 
 	fmt.Println()
-	fmt.Println(" "+color.CyanString("➜"), outputFile)
+	fmt.Println(" "+color.CyanString("❖"), "Finished.")
 }

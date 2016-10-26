@@ -5,17 +5,16 @@ Pixy generates Go code from Pixy templates.
 * Less bugs due to type checks
 * Extremely fast template rendering
 
-## Syntax
+## Inspiration
 Pixy syntax is heavily inspired by Pug (formerly known as Jade) with some enforced limitations.
 
-A pixy template is a collection of components. Therefore you can only define `component`s on the top level:
+## Syntax
+A pixy template is a collection of components. Therefore you can only define components on the top level:
 
 ```jade
 component Hello(person string)
 	h1= "Hello " + person
 ```
-
-Tags must be lowercase and component names must start with an uppercase letter.
 
 You can render a component within another:
 

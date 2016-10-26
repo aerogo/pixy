@@ -77,7 +77,7 @@ func compileNode(node *ASTNode) string {
 		lines := strings.Split(functionBody, "\n")
 
 		if strings.HasSuffix(node.Line, "()") {
-			color.Red(node.Line)
+			color.Yellow(node.Line)
 			color.Red("Components without parameters should not include parentheses in the definition.")
 		}
 
@@ -87,6 +87,13 @@ func compileNode(node *ASTNode) string {
 
 		comment := "// " + node.Line[len(keyword)+1:strings.Index(node.Line, "(")] + " component"
 		return comment + "\nfunc (r *renderer) " + node.Line[len("component "):] + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
+	}
+
+	// Disallow tags on the top level
+	if node.Indent == 0 {
+		color.Yellow(node.Line)
+		color.Red("Only 'component' definitions are allowed on the top level.")
+		return ""
 	}
 
 	var contents string
