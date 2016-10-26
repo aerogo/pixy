@@ -2,7 +2,7 @@
 Pixy generates Go code from Pixy templates.
 
 ## Motivation
-* Less bugs due to compile time type checks
+* Less bugs due to type checks
 * Extremely fast template rendering
 
 ## Syntax
