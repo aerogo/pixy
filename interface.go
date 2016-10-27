@@ -37,7 +37,7 @@ func Compile(src string, includeHeader bool) string {
 	code := compileChildren(ast)
 
 	if includeHeader {
-		return buildHeader(code) + code
+		return getHeader() + code
 	}
 
 	return optimize(code)

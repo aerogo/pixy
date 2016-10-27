@@ -11,11 +11,30 @@ import (
 var PackageName = "components"
 
 // Builds the file header.
-func buildHeader(code string) string {
-	header := "package " + PackageName + "\n\n"
-	header += "type renderer struct{}\n\n"
-	header += "// Render methods allow you to render your components.\n"
-	header += "var Render renderer\n\n"
+func getHeader() string {
+	header := "package " + PackageName + "\n"
+	header += `
+type renderer struct{}
+
+// Render methods allow you to render your components
+var Render renderer
+
+var pool sync.Pool
+
+func acquireBytesBuffer() *bytes.Buffer {
+	var _b *bytes.Buffer
+	obj := pool.Get()
+
+	if obj == nil {
+		return &bytes.Buffer{}
+	}
+
+	_b = obj.(*bytes.Buffer)
+	_b.Reset()
+	return _b
+}
+
+`
 	return header
 }
 
@@ -73,7 +92,7 @@ func compileNode(node *ASTNode) string {
 	}
 
 	if keyword == "component" {
-		functionBody := "var _b bytes.Buffer\n" + compileChildren(node) + "return _b.String()"
+		functionBody := "_b := acquireBytesBuffer()\n" + compileChildren(node) + "pool.Put(_b)\nreturn _b.String()"
 		lines := strings.Split(functionBody, "\n")
 
 		if strings.HasSuffix(node.Line, "()") {

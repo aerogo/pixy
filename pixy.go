@@ -41,7 +41,7 @@ func main() {
 	})
 
 	bundled := strings.Join(output, "\n\n")
-	final := buildHeader(bundled) + bundled
+	final := getHeader() + bundled
 
 	outputFile := outputName + outputExtension
 	writeErr := ioutil.WriteFile(outputFile, []byte(final), 0644)
