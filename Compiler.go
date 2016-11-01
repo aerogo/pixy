@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 
@@ -60,6 +61,66 @@ func write(expression string) string {
 // Writes s interpreted as a string (not an expression) to the output.
 func writeString(s string) string {
 	return write("\"" + s + "\"")
+}
+
+func isString(code string) bool {
+	// TODO: Fix this
+	return strings.HasPrefix(code, "\"") && strings.HasSuffix(code, "\"")
+}
+
+type ignoreReader struct {
+	inString          bool
+	inCharacterString bool
+	inParentheses     int
+	escape            bool
+}
+
+func (r *ignoreReader) canIgnore(letter rune) bool {
+	if letter == '\\' && !r.escape {
+		r.escape = true
+		return true
+	}
+
+	defer func() {
+		r.escape = false
+	}()
+
+	if letter == '"' && !r.escape {
+		r.inString = !r.inString
+		return true
+	}
+
+	if r.inString {
+		return true
+	}
+
+	if letter == '\'' && !r.escape {
+		r.inCharacterString = !r.inCharacterString
+		return true
+	}
+
+	if r.inCharacterString {
+		return true
+	}
+
+	if letter == '(' || letter == '[' || letter == '{' {
+		r.inParentheses++
+		return true
+	}
+
+	if letter == ')' || letter == ']' || letter == '}' {
+		r.inParentheses--
+
+		if r.inParentheses == 0 {
+			return true
+		}
+	}
+
+	if r.inParentheses > 0 {
+		return true
+	}
+
+	return false
 }
 
 // Compiles a single CodeTree.
@@ -130,7 +191,12 @@ func compileNode(node *CodeTree) string {
 
 		for key, value := range attributes {
 			code += writeString(key + "='")
-			code += write(value)
+
+			if isString(value) {
+				code += write(strings.Replace(value, "'", "\\\\'", -1))
+			} else {
+				code += write("html.EscapeString(" + value + ")")
+			}
 
 			if count == numAttributes {
 				code += writeString("'")
@@ -167,10 +233,13 @@ func compileNode(node *CodeTree) string {
 
 		if char == expected {
 			cursor++
-			start := cursor
-			remaining := node.Line[cursor:]
 
-			callback(start, remaining)
+			if callback != nil {
+				start := cursor
+				remaining := node.Line[cursor:]
+				callback(start, remaining)
+			}
+
 			return true
 		}
 
@@ -203,6 +272,65 @@ func compileNode(node *CodeTree) string {
 	}) {
 		// Empty loop
 	}
+
+	readOneAttribute := func(start int, remaining string) bool {
+		for node.Line[cursor] == ' ' {
+			cursor++
+		}
+
+		remaining = node.Line[cursor:]
+		start = cursor
+
+		var attributeName string
+
+		for index, letter := range remaining {
+			if !unicode.IsLetter(letter) && letter != '-' {
+				cursor += index
+				attributeName = node.Line[start:cursor]
+				fmt.Println("NAME", attributeName)
+				break
+			}
+		}
+
+		char := node.Line[cursor]
+
+		if char == '=' {
+			cursor++
+			start = cursor
+			remaining = node.Line[cursor:]
+
+			var ignore ignoreReader
+			for index, letter := range remaining {
+				if ignore.canIgnore(letter) {
+					continue
+				}
+
+				if letter == ',' || letter == ')' {
+					cursor += index
+					attributeValue := node.Line[start:cursor]
+					fmt.Println("VALUE", attributeValue)
+					attributes[attributeName] = attributeValue
+					cursor++
+
+					if letter == ',' {
+						return true
+					}
+
+					return false
+				}
+			}
+		}
+
+		return false
+	}
+
+	// Attributes
+	expect('(', func(start int, remaining string) {
+		for readOneAttribute(start, remaining) != false {
+			start = cursor
+			remaining = node.Line[cursor:]
+		}
+	})
 
 	if len(classes) > 0 {
 		attributes["class"] = "\"" + strings.Join(classes, " ") + "\""

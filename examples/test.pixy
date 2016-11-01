@@ -25,6 +25,9 @@ component IDAndMultipleClasses
 component Everything(text string)
 	h1#eye-dee.class-1.class-2!= text
 
+component Attributes(text string)
+	h1(title="Title ,[(=", alt=("Hello" + "123")) Element with an attribute
+
 component RenderOtherComponent
 	NoParams
 	OneParam("Hello")
