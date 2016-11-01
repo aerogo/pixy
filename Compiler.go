@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 	"unicode"
 
@@ -287,7 +286,7 @@ func compileNode(node *CodeTree) string {
 			if !unicode.IsLetter(letter) && letter != '-' {
 				cursor += index
 				attributeName = node.Line[start:cursor]
-				fmt.Println("NAME", attributeName)
+				// fmt.Println("NAME", attributeName)
 				break
 			}
 		}
@@ -308,7 +307,7 @@ func compileNode(node *CodeTree) string {
 				if letter == ',' || letter == ')' {
 					cursor += index
 					attributeValue := node.Line[start:cursor]
-					fmt.Println("VALUE", attributeValue)
+					// fmt.Println("VALUE", attributeValue)
 					attributes[attributeName] = attributeValue
 					cursor++
 
