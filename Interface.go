@@ -6,7 +6,9 @@ import (
 	"github.com/fatih/color"
 )
 
-// resulting Go code to fileOut. It also returns the Go code as a string.
+// CompileFileAndSave compiles a Pixy template from fileIn
+// and writes the resulting Go code to fileOut.
+// It also returns the Go code as a string.
 func CompileFileAndSave(fileIn string, fileOut string) string {
 	code := CompileFile(fileIn, true)
 	writeErr := ioutil.WriteFile(fileOut, []byte(code), 0644)
@@ -33,8 +35,8 @@ func CompileFile(fileIn string, includeHeader bool) string {
 
 // Compile compiles a Pixy template as a string and returns Go code.
 func Compile(src string, includeHeader bool) string {
-	ast := BuildAST(src)
-	code := compileChildren(ast)
+	tree := NewCodeTree(src)
+	code := compileChildren(tree)
 
 	if includeHeader {
 		return getHeader() + code

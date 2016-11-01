@@ -2,17 +2,17 @@ package main
 
 import "strings"
 
-// ASTNode ...
-type ASTNode struct {
+// CodeTree ...
+type CodeTree struct {
 	Line     string
-	Children []*ASTNode
-	Parent   *ASTNode
+	Children []*CodeTree
+	Parent   *CodeTree
 	Indent   int
 }
 
-// BuildAST returns a tree structure if you feed it with indentantion based source code.
-func BuildAST(src string) *ASTNode {
-	ast := new(ASTNode)
+// NewCodeTree returns a tree structure if you feed it with indentantion based source code.
+func NewCodeTree(src string) *CodeTree {
+	ast := new(CodeTree)
 	ast.Indent = -1
 
 	block := ast
@@ -40,7 +40,7 @@ func BuildAST(src string) *ASTNode {
 			line = line[indent:]
 		}
 
-		node := new(ASTNode)
+		node := new(CodeTree)
 		node.Line = line
 		node.Indent = indent
 

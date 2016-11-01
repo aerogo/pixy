@@ -38,8 +38,8 @@ func acquireBytesBuffer() *bytes.Buffer {
 	return header
 }
 
-// Compiles the children of a Pixy ASTNode.
-func compileChildren(node *ASTNode) string {
+// Compiles the children of a Pixy CodeTree.
+func compileChildren(node *CodeTree) string {
 	output := ""
 
 	for _, child := range node.Children {
@@ -62,8 +62,8 @@ func writeString(s string) string {
 	return write("\"" + s + "\"")
 }
 
-// Compiles a single ASTNode.
-func compileNode(node *ASTNode) string {
+// Compiles a single CodeTree.
+func compileNode(node *CodeTree) string {
 	var keyword string
 
 	for i, letter := range node.Line {
