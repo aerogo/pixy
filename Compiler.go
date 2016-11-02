@@ -45,7 +45,11 @@ func compileChildren(node *CodeTree) string {
 	for _, child := range node.Children {
 		code := strings.TrimSpace(compileNode(child))
 		if len(code) > 0 {
-			output += code + "\n"
+			if strings.HasPrefix(code, "else {") {
+				output = strings.TrimRight(output, "\n") + code + "\n"
+			} else {
+				output += code + "\n"
+			}
 		}
 	}
 
@@ -126,6 +130,10 @@ func (r *ignoreReader) canIgnore(letter rune) bool {
 func compileNode(node *CodeTree) string {
 	var keyword string
 
+	if node.Line[0] == '#' || node.Line[0] == '.' {
+		node.Line = "div" + node.Line
+	}
+
 	for i, letter := range node.Line {
 		// Function calls
 		if i == 0 && unicode.IsLetter(letter) && unicode.IsUpper(letter) {
@@ -142,7 +150,7 @@ func compileNode(node *CodeTree) string {
 		}
 
 		// Find keyword
-		if len(keyword) == 0 && !unicode.IsLetter(letter) && !unicode.IsDigit(letter) {
+		if len(keyword) == 0 && !unicode.IsLetter(letter) && !unicode.IsDigit(letter) && letter != '-' {
 			keyword = string([]rune(node.Line)[:i])
 		}
 	}
@@ -175,6 +183,17 @@ func compileNode(node *CodeTree) string {
 		return ""
 	}
 
+	// Flow control
+	if keyword == "if" || keyword == "else" || keyword == "for" {
+		return node.Line + " {\n" + compileChildren(node) + "}"
+	}
+
+	// Each is just syntax sugar
+	if keyword == "each" {
+		// TODO: This is a just quick prototype implementation and not correct at all
+		return strings.Replace(strings.Replace(node.Line, "each", "for _, ", 1), " in ", " := range ", 1) + " {\n" + compileChildren(node) + "}"
+	}
+
 	var contents string
 	attributes := make(map[string]string)
 
@@ -194,7 +213,7 @@ func compileNode(node *CodeTree) string {
 			if isString(value) {
 				code += write(strings.Replace(value, "'", "\\\\'", -1))
 			} else {
-				code += write("html.EscapeString(" + value + ")")
+				code += write("html.EscapeString(fmt.Sprintf(\"%v\", " + value + "))")
 			}
 
 			if count == numAttributes {
@@ -228,6 +247,10 @@ func compileNode(node *CodeTree) string {
 	cursor := len(keyword)
 
 	expect := func(expected byte, callback func(int, string)) bool {
+		if cursor >= len(node.Line) {
+			return false
+		}
+
 		char := node.Line[cursor]
 
 		if char == expected {
@@ -247,26 +270,44 @@ func compileNode(node *CodeTree) string {
 
 	// ID
 	expect('#', func(start int, remaining string) {
+		endFound := false
+
 		for index, letter := range remaining {
 			if !unicode.IsLetter(letter) && !unicode.IsDigit(letter) && letter != '-' {
 				cursor += index
 				id := node.Line[start:cursor]
 				attributes["id"] = "\"" + id + "\""
+				endFound = true
 				break
 			}
+		}
+
+		if !endFound {
+			cursor = len(node.Line)
+			id := node.Line[start:cursor]
+			attributes["id"] = "\"" + id + "\""
 		}
 	})
 
 	// Classes
 	var classes []string
 	for expect('.', func(start int, remaining string) {
+		endFound := false
+
 		for index, letter := range remaining {
 			if !unicode.IsLetter(letter) && !unicode.IsDigit(letter) && letter != '-' {
 				cursor += index
 				name := node.Line[start:cursor]
 				classes = append(classes, name)
+				endFound = true
 				break
 			}
+		}
+
+		if !endFound {
+			cursor = len(node.Line)
+			name := node.Line[start:cursor]
+			classes = append(classes, name)
 		}
 	}) {
 		// Empty loop
@@ -335,31 +376,36 @@ func compileNode(node *CodeTree) string {
 		attributes["class"] = "\"" + strings.Join(classes, " ") + "\""
 	}
 
-	// Bypass HTML escaping
-	if node.Line[cursor] == '!' {
-		escapeInput = false
-		cursor++
-	}
-
-	// Expressions
-	if node.Line[cursor] == '=' {
-		contents = strings.TrimLeft(node.Line[cursor+1:], " ")
-
-		code := tag()
-
-		if escapeInput {
-			code += write("html.EscapeString(" + contents + ")")
-		} else {
-			code += write(contents)
+	if cursor < len(node.Line) {
+		// Bypass HTML escaping
+		if node.Line[cursor] == '!' {
+			escapeInput = false
+			cursor++
 		}
 
-		code += compileChildren(node)
-		code += writeString("</" + keyword + ">")
-		return code
+		// Expressions
+		if node.Line[cursor] == '=' {
+			contents = strings.TrimLeft(node.Line[cursor+1:], " ")
+
+			code := tag()
+
+			if escapeInput {
+				code += write("html.EscapeString(fmt.Sprintf(\"%v\", " + contents + "))")
+			} else {
+				code += write(contents)
+			}
+
+			code += compileChildren(node)
+			code += writeString("</" + keyword + ">")
+			return code
+		}
+
+		contents = strings.TrimLeft(node.Line[cursor:], " ")
+		contents = strings.Replace(contents, "\"", "\\\"", -1)
+	} else {
+		contents = ""
 	}
 
-	contents = strings.TrimLeft(node.Line[cursor:], " ")
-	contents = strings.Replace(contents, "\"", "\\\"", -1)
 	code := tag()
 	code += writeString(contents)
 	code += compileChildren(node)
