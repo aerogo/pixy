@@ -41,9 +41,9 @@ component ConditionElse(text string)
 	else
 		h1 Not available.
 
-component Foreach(text string)
-	each char in text
-		p= strconv.Itoa(char)
+component Foreach(lines []string)
+	each line in lines
+		p= line
 
 component RenderOtherComponent
 	NoParams

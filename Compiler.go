@@ -213,7 +213,7 @@ func compileNode(node *CodeTree) string {
 			if isString(value) {
 				code += write(strings.Replace(value, "'", "\\\\'", -1))
 			} else {
-				code += write("html.EscapeString(fmt.Sprintf(\"%v\", " + value + "))")
+				code += write("html.EscapeString(fmt.Sprint(" + value + "))")
 			}
 
 			if count == numAttributes {
@@ -390,7 +390,7 @@ func compileNode(node *CodeTree) string {
 			code := tag()
 
 			if escapeInput {
-				code += write("html.EscapeString(fmt.Sprintf(\"%v\", " + contents + "))")
+				code += write("html.EscapeString(fmt.Sprint(" + contents + "))")
 			} else {
 				code += write(contents)
 			}
