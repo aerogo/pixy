@@ -234,7 +234,7 @@ func compileNode(node *CodeTree) string {
 		code := ""
 
 		if keyword == "html" {
-			code += writeString("<!DOCTYPE html>")
+			code = writeString("<!DOCTYPE html>")
 		}
 
 		code += tag()
