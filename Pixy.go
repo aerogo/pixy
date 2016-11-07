@@ -13,6 +13,7 @@ import (
 
 const (
 	pixyExtension   = ".pixy"
+	stylExtension   = ".styl"
 	outputName      = "❖"
 	outputExtension = ".go"
 )
@@ -23,19 +24,22 @@ func main() {
 	var output []string
 
 	filepath.Walk(".", func(path string, f os.FileInfo, err error) error {
-		if f.IsDir() || filepath.Ext(path) != pixyExtension {
+		if f.IsDir() {
 			return nil
 		}
 
-		// base := filepath.Base(path)
-		// outputPath := componentsDirectory + string(os.PathSeparator) + string(base[:len(base)-len(pixyExtension)]) + outputExtension
+		switch filepath.Ext(path) {
+		// Pixy
+		case pixyExtension:
+			fmt.Println(" "+color.GreenString("❀"), path)
 
-		// fmt.Println(path, "->", outputPath)
-		// CompileFile(path, outputPath)
-		fmt.Println(" "+color.GreenString("❀"), path)
+			code := CompileFile(path, false)
+			output = append(output, code)
 
-		code := CompileFile(path, false)
-		output = append(output, code)
+		// Stylus
+		case stylExtension:
+			fmt.Println(" "+color.GreenString("🖌"), path)
+		}
 
 		return nil
 	})
