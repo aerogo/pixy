@@ -39,6 +39,14 @@ func main() {
 		// Stylus
 		case stylExtension:
 			fmt.Println(" "+color.GreenString("🖌"), path)
+			output, err := exec.Command("stylus", "-p", "-c", path).Output()
+
+			if err != nil {
+				color.Red("Couldn't execute stylus. Please run 'npm i -g stylus'.")
+				return nil
+			}
+
+			color.Yellow(string(output))
 		}
 
 		return nil
