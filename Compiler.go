@@ -175,6 +175,14 @@ func compileNode(node *CodeTree) string {
 		return code
 	}
 
+	endTag := func() string {
+		if selfClosingTags[keyword] != true {
+			return writeString("</" + keyword + ">")
+		}
+
+		return ""
+	}
+
 	// No contents?
 	if node.Line == keyword {
 		code := ""
@@ -185,7 +193,7 @@ func compileNode(node *CodeTree) string {
 
 		code += tag()
 		code += compileChildren(node)
-		code += writeString("</" + keyword + ">")
+		code += endTag()
 		return code
 	}
 
@@ -342,7 +350,7 @@ func compileNode(node *CodeTree) string {
 			}
 
 			code += compileChildren(node)
-			code += writeString("</" + keyword + ">")
+			code += endTag()
 			return code
 		}
 
@@ -355,6 +363,6 @@ func compileNode(node *CodeTree) string {
 	code := tag()
 	code += writeString(contents)
 	code += compileChildren(node)
-	code += writeString("</" + keyword + ">")
+	code += endTag()
 	return code
 }

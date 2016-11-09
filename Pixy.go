@@ -8,20 +8,33 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/aerojs/aero"
 	"github.com/fatih/color"
 )
 
 const (
 	pixyExtension   = ".pixy"
 	stylExtension   = ".styl"
-	outputName      = "❖"
+	outputName      = "$"
 	outputExtension = ".go"
 )
 
+// StylusCompileResult ...
+type StylusCompileResult struct {
+	file string
+	css  string
+}
+
 func main() {
+	app := aero.New()
+
 	PackageName = "main"
 
 	var output []string
+	var css []string
+
+	styleCount := 0
+	cssChannel := make(chan *StylusCompileResult, 1024)
 
 	filepath.Walk(".", func(path string, f os.FileInfo, err error) error {
 		if f.IsDir() {
@@ -38,22 +51,80 @@ func main() {
 
 		// Stylus
 		case stylExtension:
-			fmt.Println(" "+color.GreenString("🖌"), path)
-			output, err := exec.Command("stylus", "-p", "-c", path).Output()
+			go func() {
+				style, err := exec.Command("stylus", "-p", "--import", "styles/config.styl", "-c", path).Output()
 
-			if err != nil {
-				color.Red("Couldn't execute stylus. Please run 'npm i -g stylus'.")
-				return nil
-			}
+				if err != nil {
+					color.Red("Couldn't execute stylus.")
+					color.Red(err.Error())
+					cssChannel <- &StylusCompileResult{
+						file: path,
+						css:  "",
+					}
+					return
+				}
 
-			color.Yellow(string(output))
+				cssChannel <- &StylusCompileResult{
+					file: path,
+					css:  string(style),
+				}
+			}()
+
+			styleCount++
 		}
 
 		return nil
 	})
 
+	// Fonts
+	fontsCSS := getFontsCSS()
+
+	// CSS
+	styles := make(map[string]string)
+
+	for i := 0; i < styleCount; i++ {
+		result := <-cssChannel
+		styles[result.file] = result.css
+	}
+
+	// Ordered styles
+	for _, styleName := range app.Config.Styles {
+		styleName = "styles/" + styleName + ".styl"
+		styleContent := styles[styleName]
+
+		if styleContent != "" {
+			fmt.Println(" "+color.GreenString("☼"), styleName)
+			css = append(css, styleContent)
+			styles[styleName] = ""
+		}
+	}
+
+	// Unordered styles in styles directory
+	for styleName, styleContent := range styles {
+		if strings.HasPrefix(styleName, "styles/") && styleContent != "" {
+			fmt.Println(" "+color.GreenString("☼"), styleName)
+			css = append(css, styleContent)
+			styles[styleName] = ""
+		}
+	}
+
+	// Unordered styles
+	for styleName, styleContent := range styles {
+		if styleContent != "" {
+			fmt.Println(" "+color.GreenString("☼"), styleName)
+			css = append(css, styleContent)
+			styles[styleName] = ""
+		}
+	}
+
+	bundledCSS := fontsCSS + strings.Join(css, "")
+	bundledCSS = strings.Replace(bundledCSS, "\\", "\\\\", -1)
+	bundledCSS = strings.Replace(bundledCSS, "\"", "\\\"", -1)
+
+	cssConstant := "const bundledCSS = \"" + bundledCSS + "\"\n"
+
 	bundled := strings.Join(output, "\n\n")
-	final := getHeader() + bundled
+	final := getHeader() + cssConstant + bundled
 
 	outputFile := outputName + outputExtension
 	writeErr := ioutil.WriteFile(outputFile, []byte(final), 0644)
@@ -78,5 +149,5 @@ func main() {
 	}
 
 	fmt.Println()
-	fmt.Println(" "+color.CyanString("❖"), "Finished.")
+	fmt.Println("Done.")
 }
