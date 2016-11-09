@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/aerojs/aero"
+	"github.com/aerogo/aero"
 	"github.com/fatih/color"
 )
 
@@ -26,7 +26,9 @@ type StylusCompileResult struct {
 }
 
 func main() {
+	// Load config file
 	app := aero.New()
+	app.Load()
 
 	PackageName = "main"
 
