@@ -1,4 +1,4 @@
-package main
+package pixy
 
 var selfClosingTags = map[string]bool{
 	"area":    true,

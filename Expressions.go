@@ -1,4 +1,4 @@
-package main
+package pixy
 
 type ignoreReader struct {
 	inString          bool

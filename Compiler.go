@@ -1,42 +1,9 @@
-package main
+package pixy
 
 import (
 	"strings"
 	"unicode"
-
-	"github.com/fatih/color"
 )
-
-// PackageName contains the package name used in the generated .go files.
-var PackageName = "components"
-
-// Builds the file header.
-func getHeader() string {
-	header := "package " + PackageName + "\n"
-	header += `
-type renderer struct{}
-
-// Render methods allow you to render your components
-var Render renderer
-
-var pool sync.Pool
-
-func acquireBytesBuffer() *bytes.Buffer {
-	var _b *bytes.Buffer
-	obj := pool.Get()
-
-	if obj == nil {
-		return &bytes.Buffer{}
-	}
-
-	_b = obj.(*bytes.Buffer)
-	_b.Reset()
-	return _b
-}
-
-`
-	return header
-}
 
 // Compiles the children of a Pixy CodeTree.
 func compileChildren(node *CodeTree) string {
@@ -87,7 +54,7 @@ func compileNode(node *CodeTree) string {
 				node.Line += "()"
 			}
 
-			return write("Render." + node.Line)
+			return write(node.Line)
 		}
 
 		// Comments
@@ -101,32 +68,9 @@ func compileNode(node *CodeTree) string {
 		}
 	}
 
+	// Keyword takes full line
 	if len(keyword) == 0 {
 		keyword = node.Line
-	}
-
-	if keyword == "component" {
-		functionBody := "_b := acquireBytesBuffer()\n" + compileChildren(node) + "pool.Put(_b)\nreturn _b.String()"
-		lines := strings.Split(functionBody, "\n")
-
-		if strings.HasSuffix(node.Line, "()") {
-			color.Yellow(node.Line)
-			color.Red("Components without parameters should not include parentheses in the definition.")
-		}
-
-		if !strings.HasSuffix(node.Line, ")") {
-			node.Line += "()"
-		}
-
-		comment := "// " + node.Line[len(keyword)+1:strings.Index(node.Line, "(")] + " component"
-		return comment + "\nfunc (r *renderer) " + node.Line[len("component "):] + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
-	}
-
-	// Disallow tags on the top level
-	if node.Indent == 0 {
-		color.Yellow(node.Line)
-		color.Red("Only 'component' definitions are allowed on the top level.")
-		return ""
 	}
 
 	// Flow control

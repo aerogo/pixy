@@ -1,2 +1,0 @@
-component Hello(person string)
-	h1= "Hello " + person

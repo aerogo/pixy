@@ -1,46 +1,82 @@
-package main
+package pixy
 
 import (
 	"io/ioutil"
+	"path"
+	"strings"
 
 	"github.com/fatih/color"
 )
 
-// CompileFileAndSave compiles a Pixy template from fileIn
-// and writes the resulting Go code to fileOut.
-// It also returns the Go code as a string.
-func CompileFileAndSave(fileIn string, fileOut string) string {
-	code := CompileFile(fileIn, true)
-	writeErr := ioutil.WriteFile(fileOut, []byte(code), 0644)
-
-	if writeErr != nil {
-		color.Red("Can't write to " + fileOut)
-	}
-
-	return code
+// Component represents a single, reusable template.
+type Component struct {
+	Name string
+	Code string
 }
 
-// CompileFile compiles a Pixy template from fileIn and returns the Go code as a string.
-func CompileFile(fileIn string, includeHeader bool) string {
+// CompileFileAndSaveIn compiles a Pixy template from fileIn
+// and writes the resulting components to dirOut.
+func CompileFileAndSaveIn(fileIn string, dirOut string) {
 	srcBytes, readErr := ioutil.ReadFile(fileIn)
 
 	if readErr != nil {
 		color.Red("Can't read from " + fileIn)
-		return ""
+		return
 	}
 
 	src := string(srcBytes)
-	return Compile(src, includeHeader)
+	components := Compile(src)
+
+	for _, component := range components {
+		fileOut := path.Join(dirOut, component.Name, ".go")
+		writeErr := ioutil.WriteFile(fileOut, []byte(src), 0644)
+
+		if writeErr != nil {
+			color.Red("Can't write to " + fileOut)
+		}
+
+		// Run goimports
+		goimports(fileOut)
+	}
 }
 
-// Compile compiles a Pixy template as a string and returns Go code.
-func Compile(src string, includeHeader bool) string {
+// Compile compiles a Pixy template as a string and returns a slice of components.
+func Compile(src string) []*Component {
 	tree := NewCodeTree(src)
-	code := compileChildren(tree)
+	components := []*Component{}
 
-	if includeHeader {
-		return getHeader() + code
+	for _, node := range tree.Children {
+		// Disallow tags on the top level
+		if !strings.HasPrefix(node.Line, "component ") {
+			color.Yellow(node.Line)
+			color.Red("Only 'component' definitions are allowed on the top level.")
+			continue
+		}
+
+		definition := node.Line[len("component "):]
+
+		if strings.HasSuffix(definition, "()") {
+			color.Yellow(definition)
+			color.Red("Components without parameters should not include parentheses in the definition.")
+		}
+
+		if !strings.HasSuffix(definition, ")") {
+			definition += "()"
+		}
+
+		componentName := definition[:strings.Index(node.Line, "(")]
+		functionBody := "_b := acquireBytesBuffer()\n" + compileChildren(node) + "pool.Put(_b)\nreturn _b.String()"
+		lines := strings.Split(functionBody, "\n")
+		comment := "// " + componentName + " component"
+		componentCode := getFileHeader()
+		componentCode += comment + "\nfunc (r *renderer) " + definition + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
+		componentCode = optimize(componentCode)
+
+		components = append(components, &Component{
+			Name: componentName,
+			Code: componentCode,
+		})
 	}
 
-	return optimize(code)
+	return components
 }
