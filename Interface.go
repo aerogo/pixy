@@ -28,16 +28,19 @@ func CompileFileAndSaveIn(fileIn string, dirOut string) {
 	components := Compile(src)
 
 	for _, component := range components {
-		fileOut := path.Join(dirOut, component.Name, ".go")
-		writeErr := ioutil.WriteFile(fileOut, []byte(src), 0644)
+		fileOut := path.Join(dirOut, component.Name+".go")
+		writeErr := ioutil.WriteFile(fileOut, []byte(component.Code), 0644)
 
 		if writeErr != nil {
 			color.Red("Can't write to " + fileOut)
+			color.Red(writeErr.Error())
 		}
 
 		// Run goimports
 		goimports(fileOut)
 	}
+
+	ioutil.WriteFile(path.Join(dirOut, "$.go"), []byte(getUtilities()), 0644)
 }
 
 // Compile compiles a Pixy template as a string and returns a slice of components.
@@ -64,12 +67,12 @@ func Compile(src string) []*Component {
 			definition += "()"
 		}
 
-		componentName := definition[:strings.Index(node.Line, "(")]
+		componentName := definition[:strings.Index(definition, "(")]
 		functionBody := "_b := acquireBytesBuffer()\n" + compileChildren(node) + "pool.Put(_b)\nreturn _b.String()"
 		lines := strings.Split(functionBody, "\n")
 		comment := "// " + componentName + " component"
 		componentCode := getFileHeader()
-		componentCode += comment + "\nfunc (r *renderer) " + definition + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
+		componentCode += comment + "\nfunc " + definition + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
 		componentCode = optimize(componentCode)
 
 		components = append(components, &Component{

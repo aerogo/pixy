@@ -10,7 +10,12 @@ func getFileHeader() string {
 
 // Utility functions
 func getUtilities() string {
-	return `
+	return getFileHeader() + `
+import (
+	"sync"
+	"bytes"
+)
+
 var pool sync.Pool
 
 func acquireBytesBuffer() *bytes.Buffer {
@@ -25,6 +30,5 @@ func acquireBytesBuffer() *bytes.Buffer {
 	_b.Reset()
 	return _b
 }
-
 `
 }
