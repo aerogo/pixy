@@ -3,6 +3,8 @@ package pixy
 import (
 	"strings"
 	"unicode"
+
+	"github.com/fatih/color"
 )
 
 // Compiles the children of a Pixy CodeTree.
@@ -25,6 +27,11 @@ func compileChildren(node *CodeTree) string {
 
 // Writes expression to the output.
 func write(expression string) string {
+	if strings.HasPrefix(expression, "'") {
+		color.Red("Strings must use \" instead of '")
+		return ""
+	}
+
 	return "_b.WriteString(" + expression + ")\n"
 }
 
@@ -246,7 +253,13 @@ func compileNode(node *CodeTree) string {
 				if letter == ',' || letter == ')' {
 					cursor += index
 					attributeValue := node.Line[start:cursor]
-					// fmt.Println("VALUE", attributeValue)
+
+					if strings.HasPrefix(attributeValue, "'") {
+						color.Yellow(attributeValue)
+						color.Red("Strings must use \" instead of '")
+						attributeValue = ""
+					}
+
 					attributes[attributeName] = attributeValue
 					cursor++
 
@@ -298,7 +311,7 @@ func compileNode(node *CodeTree) string {
 			return code
 		}
 
-		contents = strings.TrimLeft(node.Line[cursor:], " ")
+		contents = node.Line[cursor+1:]
 		contents = strings.Replace(contents, "\"", "\\\"", -1)
 	} else {
 		contents = ""

@@ -19,6 +19,8 @@ func optimize(code string) string {
 	lines := strings.Split(code, "\n")
 	lastString := ""
 
+	// TODO: Optimize single WriteString calls to a simple return
+
 	for index, line := range lines {
 		pos := strings.Index(line, writeStringCall)
 

@@ -14,6 +14,7 @@ func getUtilities() string {
 import (
 	"sync"
 	"bytes"
+	"fmt"
 )
 
 var pool sync.Pool
@@ -29,6 +30,11 @@ func acquireBytesBuffer() *bytes.Buffer {
 	_b = obj.(*bytes.Buffer)
 	_b.Reset()
 	return _b
+}
+
+// Converts anything into a string
+func toString(v interface{}) string {
+	return fmt.Sprint(v)
 }
 `
 }
