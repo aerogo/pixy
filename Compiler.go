@@ -108,7 +108,9 @@ func compileNode(node *CodeTree) string {
 			code += writeString(key + "='")
 
 			if isString(value) {
-				code += write(strings.Replace(value, "'", "\\\\'", -1))
+				// Attribute values are enclosed by apostrophes.
+				// Therefore we need to escape this character in the attribute value.
+				code += write(strings.Replace(value, "'", "&#39;", -1))
 			} else {
 				code += write("html.EscapeString(fmt.Sprint(" + value + "))")
 			}
