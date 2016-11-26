@@ -4,11 +4,12 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/aerogo/codetree"
 	"github.com/fatih/color"
 )
 
 // Compiles the children of a Pixy CodeTree.
-func compileChildren(node *CodeTree) string {
+func compileChildren(node *codetree.CodeTree) string {
 	output := ""
 
 	for _, child := range node.Children {
@@ -46,8 +47,8 @@ func isString(code string) bool {
 	return strings.HasPrefix(code, "\"") && strings.HasSuffix(code, "\"")
 }
 
-// Compiles a single CodeTree.
-func compileNode(node *CodeTree) string {
+// Compiles a single codetree.CodeTree.
+func compileNode(node *codetree.CodeTree) string {
 	var keyword string
 
 	if node.Line[0] == '#' || node.Line[0] == '.' {

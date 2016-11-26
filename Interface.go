@@ -5,6 +5,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/aerogo/codetree"
 	"github.com/fatih/color"
 )
 
@@ -45,7 +46,12 @@ func CompileFileAndSaveIn(fileIn string, dirOut string) {
 
 // Compile compiles a Pixy template as a string and returns a slice of components.
 func Compile(src string) []*Component {
-	tree := NewCodeTree(src)
+	tree, err := codetree.New(src)
+
+	if err != nil {
+		panic(err)
+	}
+
 	components := []*Component{}
 
 	for _, node := range tree.Children {
