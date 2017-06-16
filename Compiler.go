@@ -65,6 +65,11 @@ func compileNode(node *codetree.CodeTree) string {
 			return write(node.Line)
 		}
 
+		// Go external function call embeds
+		if i == 2 && node.Line[:3] == "go:" {
+			return write(node.Line[3:])
+		}
+
 		// Comments
 		if i == 1 && node.Line[0] == '/' && node.Line[1] == '/' {
 			return ""
