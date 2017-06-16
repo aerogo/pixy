@@ -96,13 +96,19 @@ func compileNode(node *codetree.CodeTree) string {
 	attributes := make(map[string]string)
 
 	tag := func() string {
+		code := ""
+
+		if keyword == "html" {
+			code = writeString("<!DOCTYPE html>")
+		}
+
 		numAttributes := len(attributes)
 
 		if numAttributes == 0 {
-			return writeString("<" + keyword + ">")
+			return code + writeString("<"+keyword+">")
 		}
 
-		code := writeString("<" + keyword + " ")
+		code += writeString("<" + keyword + " ")
 		count := 1
 
 		for key, value := range attributes {
@@ -139,13 +145,7 @@ func compileNode(node *codetree.CodeTree) string {
 
 	// No contents?
 	if node.Line == keyword {
-		code := ""
-
-		if keyword == "html" {
-			code = writeString("<!DOCTYPE html>")
-		}
-
-		code += tag()
+		code := tag()
 		code += compileChildren(node)
 		code += endTag()
 		return code
