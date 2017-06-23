@@ -9,38 +9,28 @@ import (
 	"github.com/fatih/color"
 )
 
-// Component represents a single, reusable template.
-type Component struct {
-	Name string
-	Code string
-}
-
 // CompileFileAndSaveIn compiles a Pixy template from fileIn
 // and writes the resulting components to dirOut.
-func CompileFileAndSaveIn(fileIn string, dirOut string) {
+func CompileFileAndSaveIn(fileIn string, dirOut string) []*Component {
 	srcBytes, readErr := ioutil.ReadFile(fileIn)
 
 	if readErr != nil {
 		color.Red("Can't read from " + fileIn)
-		return
+		return nil
 	}
 
 	src := string(srcBytes)
 	components := Compile(src)
 
 	for _, component := range components {
-		fileOut := path.Join(dirOut, component.Name+".go")
-		writeErr := ioutil.WriteFile(fileOut, []byte(component.Code), 0644)
-
-		if writeErr != nil {
-			color.Red("Can't write to " + fileOut)
-			color.Red(writeErr.Error())
-		}
-
-		// Run goimports
-		goimports(fileOut)
+		component.Save(dirOut)
 	}
 
+	return components
+}
+
+// SaveUtilities adds the file $.go with required function definitions to the directory.
+func SaveUtilities(dirOut string) {
 	ioutil.WriteFile(path.Join(dirOut, "$.go"), []byte(getUtilities()), 0644)
 }
 
