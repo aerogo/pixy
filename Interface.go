@@ -67,6 +67,7 @@ func Compile(src string) []*Component {
 		streamFunctionBody := compileChildren(node)
 		functionBody := "_b := acquireBytesBuffer()\n" + streamFunctionBody + "pool.Put(_b)\nreturn _b.String()"
 		functionBody = strings.Replace(functionBody, "\n", "\n\t", -1)
+		streamFunctionBody = strings.Replace(streamFunctionBody, "\n", "\n\t", -1)
 		comment := "// " + componentName + " component"
 
 		componentCode := acquireBytesBuffer()
@@ -77,20 +78,20 @@ func Compile(src string) []*Component {
 		componentCode.WriteString("\nfunc ")
 		componentCode.WriteString(definition)
 		componentCode.WriteString(" string {\n\t")
-		componentCode.WriteString(functionBody)
+		componentCode.WriteString(optimize(functionBody))
 		componentCode.WriteString("\n}")
 
 		// Stream function
-		componentCode.WriteString("\n\n")
+		componentCode.WriteByte('\n')
 		componentCode.WriteString("\nfunc stream")
 		componentCode.WriteString(strings.Replace(definition, "(", "(_b *bytes.Buffer, ", 1))
-		componentCode.WriteString(" {\n\t")
-		componentCode.WriteString(strings.Replace(streamFunctionBody, "\n", "\n\t", -1))
-		componentCode.WriteString("\n}")
+		componentCode.WriteString(" {")
+		componentCode.WriteString(optimize(streamFunctionBody))
+		componentCode.WriteString("}")
 
 		components = append(components, &Component{
 			Name: componentName,
-			Code: optimize(componentCode.String()),
+			Code: componentCode.String(),
 		})
 
 		pool.Put(componentCode)
