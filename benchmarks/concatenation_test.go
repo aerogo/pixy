@@ -109,7 +109,7 @@ func BenchmarkCopyStringKL(b *testing.B) {
 	str := string(_b)
 
 	if len(str) != b.N*len(testString) {
-		fmt.Println("Error BenchmarkCopyKL")
+		fmt.Println("Error BenchmarkCopyStringKL")
 	}
 }
 
@@ -126,7 +126,7 @@ func BenchmarkCopyBytesKL(b *testing.B) {
 	str := string(_b)
 
 	if len(str) != b.N*len(testString) {
-		fmt.Println("Error BenchmarkCopyKL")
+		fmt.Println("Error BenchmarkCopyBytesKL")
 	}
 }
 
