@@ -1,6 +1,7 @@
 package pixy
 
 import (
+	"bytes"
 	"regexp"
 	"strings"
 )
@@ -17,22 +18,24 @@ func init() {
 // optimize combines multiple WriteString calls to one.
 func optimize(code string) string {
 	lines := strings.Split(code, "\n")
-	lastString := ""
+	var lastString bytes.Buffer
 
 	// TODO: Optimize single WriteString calls to a simple return
 
 	for index, line := range lines {
+		// Find WriteString call
 		pos := strings.Index(line, writeStringCall)
 
 		if pos != -1 {
-			lastString += line[pos+len(writeStringCall) : len(line)-2]
+			// Delete this line and save it in a buffer "lastString"
+			lastString.WriteString(line[pos+len(writeStringCall) : len(line)-2])
 			lines[index] = ""
 			continue
 		}
 
-		if len(lastString) > 0 {
-			lines[index] = "\t" + writeStringCall + lastString + "\")\n" + line
-			lastString = ""
+		if lastString.Len() > 0 {
+			lines[index] = "\t" + writeStringCall + lastString.String() + "\")\n" + line
+			lastString.Reset()
 		}
 	}
 

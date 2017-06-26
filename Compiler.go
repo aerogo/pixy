@@ -61,8 +61,7 @@ func compileNode(node *codetree.CodeTree) string {
 			if !strings.HasSuffix(node.Line, ")") {
 				node.Line += "()"
 			}
-
-			return write(node.Line)
+			return "stream" + strings.Replace(node.Line, "(", "(_b, ", 1)
 		}
 
 		// Go external function call embeds
@@ -101,43 +100,46 @@ func compileNode(node *codetree.CodeTree) string {
 	attributes := make(map[string]string)
 
 	tag := func() string {
-		code := ""
+		code := acquireBytesBuffer()
 
 		if keyword == "html" {
-			code = writeString("<!DOCTYPE html>")
+			code.WriteString(writeString("<!DOCTYPE html>"))
 		}
 
 		numAttributes := len(attributes)
 
 		if numAttributes == 0 {
-			return code + writeString("<"+keyword+">")
+			code.WriteString(writeString("<" + keyword + ">"))
+			return code.String()
 		}
 
-		code += writeString("<" + keyword + " ")
+		code.WriteString(writeString("<" + keyword + " "))
 		count := 1
 
 		for key, value := range attributes {
-			code += writeString(key + "='")
+			code.WriteString(writeString(key + "='"))
 
 			if isString(value) {
 				// Attribute values are enclosed by apostrophes.
 				// Therefore we need to escape this character in the attribute value.
-				code += write(strings.Replace(value, "'", "&#39;", -1))
+				code.WriteString(write(strings.Replace(value, "'", "&#39;", -1)))
 			} else {
-				code += write("html.EscapeString(fmt.Sprint(" + value + "))")
+				code.WriteString(write("html.EscapeString(fmt.Sprint(" + value + "))"))
 			}
 
 			if count == numAttributes {
-				code += writeString("'")
+				code.WriteString(writeString("'"))
 			} else {
-				code += writeString("' ")
+				code.WriteString(writeString("' "))
 			}
 
 			count++
 		}
 
-		code += writeString(">")
-		return code
+		code.WriteString(writeString(">"))
+		result := code.String()
+		pool.Put(code)
+		return result
 	}
 
 	endTag := func() string {

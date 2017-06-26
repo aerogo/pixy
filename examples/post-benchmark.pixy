@@ -1,0 +1,17 @@
+component Postable
+	// This pixy component doesn't make any sense.
+	// The sole purpose is to use it in a benchmark.
+	.post.mountable
+		.post-author
+			p Avatar
+
+		.post-content
+			div(id="render-" + "post.ID()")!= post.HTML()
+
+			.post-toolbar(id="toolbar-" + "post.ID()")
+				.spacer
+				.post-likes(id="likes-" + "post.ID()", title="Likes")= len("post.Likes()")
+
+				if "post.Type()" != "Thread"
+					a.post-tool.post-permalink.ajax(href="post.Link()", title="Permalink")
+						p Icon("link")

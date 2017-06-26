@@ -64,17 +64,36 @@ func Compile(src string) []*Component {
 		}
 
 		componentName := definition[:strings.Index(definition, "(")]
-		functionBody := "_b := acquireBytesBuffer()\n" + compileChildren(node) + "pool.Put(_b)\nreturn _b.String()"
-		lines := strings.Split(functionBody, "\n")
+		streamFunctionBody := compileChildren(node)
+		functionBody := "_b := acquireBytesBuffer()\n" + streamFunctionBody + "pool.Put(_b)\nreturn _b.String()"
+		functionBody = strings.Replace(functionBody, "\n", "\n\t", -1)
 		comment := "// " + componentName + " component"
-		componentCode := getFileHeader()
-		componentCode += comment + "\nfunc " + definition + " string {\n\t" + strings.Join(lines, "\n\t") + "\n}"
-		componentCode = optimize(componentCode)
+
+		componentCode := acquireBytesBuffer()
+		componentCode.WriteString(getFileHeader())
+
+		// Normal function
+		componentCode.WriteString(comment)
+		componentCode.WriteString("\nfunc ")
+		componentCode.WriteString(definition)
+		componentCode.WriteString(" string {\n\t")
+		componentCode.WriteString(functionBody)
+		componentCode.WriteString("\n}")
+
+		// Stream function
+		componentCode.WriteByte('\n')
+		componentCode.WriteString("\nfunc stream")
+		componentCode.WriteString(strings.Replace(definition, "(", "(_b *bytes.Buffer, ", 1))
+		componentCode.WriteString(" {\n\t")
+		componentCode.WriteString(strings.Replace(streamFunctionBody, "\n", "\n\t", -1))
+		componentCode.WriteString("\n}")
 
 		components = append(components, &Component{
 			Name: componentName,
-			Code: componentCode,
+			Code: optimize(componentCode.String()),
 		})
+
+		pool.Put(componentCode)
 	}
 
 	return components
