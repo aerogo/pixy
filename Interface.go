@@ -81,7 +81,7 @@ func Compile(src string) []*Component {
 		componentCode.WriteString("\n}")
 
 		// Stream function
-		componentCode.WriteByte('\n')
+		componentCode.WriteString("\n\n")
 		componentCode.WriteString("\nfunc stream")
 		componentCode.WriteString(strings.Replace(definition, "(", "(_b *bytes.Buffer, ", 1))
 		componentCode.WriteString(" {\n\t")
