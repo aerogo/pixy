@@ -7,10 +7,6 @@ Pixy compiles Pixy templates to Go code.
 * Extremely fast HTML template rendering
 * Less bugs due to type checks
 
-## Inspiration
-
-Pixy syntax is heavily inspired by Pug (formerly known as Jade) with some enforced limitations.
-
 ## Syntax
 
 A pixy template is a collection of components.
