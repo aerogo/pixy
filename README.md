@@ -82,6 +82,13 @@ component Hello
 	h1(title="Greeting " + strconv.Itoa(123)) Hello World
 ```
 
+Embed HTML with the suffix `!=`:
+
+```jade
+component Hello
+	div!= "<h1>Hello</h1>"
+```
+
 Call a parameter-less component:
 
 ```jade
