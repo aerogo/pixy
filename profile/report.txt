@@ -1,0 +1,14 @@
+(pprof) top10
+Showing nodes accounting for 24.93kB, 100% of 24.93kB total
+Showing top 10 nodes out of 12
+      flat  flat%   sum%        cum   cum%
+   12.09kB 48.52% 48.52%    12.09kB 48.52%  github.com/aerogo/codetree.New /home/eduard/workspace/src/github.com/aerogo/codetree/CodeTree.go
+    8.38kB 33.62% 82.13%     8.38kB 33.62%  runtime.malg /usr/local/go/src/runtime/proc.go
+    4.45kB 17.87%   100%     8.64kB 34.67%  runtime.allocm /usr/local/go/src/runtime/proc.go
+         0     0%   100%    12.09kB 48.52%  github.com/aerogo/pixy.Compile /home/eduard/workspace/src/github.com/aerogo/pixy/Interface.go
+         0     0%   100%    12.09kB 48.52%  main.main /home/eduard/workspace/src/github.com/aerogo/pixy/profile/main.go
+         0     0%   100%    12.09kB 48.52%  runtime.main /usr/local/go/src/runtime/proc.go
+         0     0%   100%    12.83kB 51.48%  runtime.mstart /usr/local/go/src/runtime/proc.go
+         0     0%   100%     8.64kB 34.67%  runtime.newm /usr/local/go/src/runtime/proc.go
+         0     0%   100%     4.19kB 16.81%  runtime.newproc.func1 /usr/local/go/src/runtime/proc.go
+         0     0%   100%     4.19kB 16.81%  runtime.newproc1 /usr/local/go/src/runtime/proc.go
