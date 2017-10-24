@@ -14,6 +14,7 @@ func compileChildren(node *codetree.CodeTree) string {
 
 	for _, child := range node.Children {
 		code := strings.TrimSpace(compileNode(child))
+
 		if len(code) > 0 {
 			if strings.HasPrefix(code, "else {") || strings.HasPrefix(code, "else if ") {
 				output = strings.TrimRight(output, "\n") + code + "\n"

@@ -1,8 +1,10 @@
-package pixy
+package pixy_test
 
 import (
 	"io/ioutil"
 	"testing"
+
+	"github.com/aerogo/pixy"
 )
 
 func BenchmarkCompiler(b *testing.B) {
@@ -11,9 +13,10 @@ func BenchmarkCompiler(b *testing.B) {
 
 	b.ReportAllocs()
 	b.ResetTimer()
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			Compile(code)
+			pixy.Compile(code)
 		}
 	})
 }
