@@ -37,6 +37,7 @@ func SaveUtilities(dirOut string) {
 // Compile compiles a Pixy template as a string and returns a slice of components.
 func Compile(src string) []*Component {
 	tree, err := codetree.New(src)
+	defer tree.Close()
 
 	if err != nil {
 		panic(err)
