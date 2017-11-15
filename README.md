@@ -109,3 +109,9 @@ component Hello(person string, magicNumber int)
 	h1= "Hello " + person
 	p= magicNumber
 ```
+
+## API
+
+```go
+components := pixy.Compile(src)
+```
