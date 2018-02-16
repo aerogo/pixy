@@ -2,7 +2,6 @@ package pixy
 
 import (
 	"io/ioutil"
-	"path"
 	"strings"
 
 	"github.com/aerogo/codetree"
@@ -30,8 +29,8 @@ func CompileFileAndSaveIn(fileIn string, dirOut string) []*Component {
 }
 
 // SaveUtilities adds the file $.go with required function definitions to the directory.
-func SaveUtilities(dirOut string) {
-	ioutil.WriteFile(path.Join(dirOut, "$.go"), []byte(getUtilities()), 0644)
+func SaveUtilities(filePath string) {
+	ioutil.WriteFile(filePath, []byte(getUtilities()), 0644)
 }
 
 // Compile compiles a Pixy template as a string and returns a slice of components.
