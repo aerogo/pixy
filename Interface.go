@@ -56,7 +56,7 @@ func Compile(src string) []*Component {
 
 		if strings.HasSuffix(definition, "()") {
 			color.Yellow(definition)
-			color.Red("Components without parameters should not include parentheses in the definition.")
+			color.Red("Components without definition should not include parentheses in the definition.")
 		}
 
 		if !strings.HasSuffix(definition, ")") {
@@ -64,8 +64,12 @@ func Compile(src string) []*Component {
 		}
 
 		componentName := definition[:strings.Index(definition, "(")]
+		componentParameters := definition[len(componentName)+1 : len(definition)-1]
 		streamFunctionBody := compileChildren(node)
-		functionBody := "_b := acquireBytesBuffer()\n" + streamFunctionBody + "pool.Put(_b)\nreturn _b.String()"
+		parameterNames := extractParameterNames(componentParameters)
+		parameterNamesString := strings.Join(parameterNames, ", ")
+		streamFunctionCall := "stream" + componentName + "(_b, " + parameterNamesString + ")"
+		functionBody := "_b := acquireBytesBuffer()\n" + streamFunctionCall + "\npool.Put(_b)\nreturn _b.String()"
 		functionBody = strings.Replace(functionBody, "\n", "\n\t", -1)
 		streamFunctionBody = strings.Replace(streamFunctionBody, "\n", "\n\t", -1)
 		comment := "// " + componentName + " component"
@@ -98,4 +102,23 @@ func Compile(src string) []*Component {
 	}
 
 	return components
+}
+
+// extractParameterNames deletes the type information from a comma-separated list of parameters.
+func extractParameterNames(definition string) []string {
+	definitions := strings.Split(definition, ",")
+
+	for index, definition := range definitions {
+		definition := strings.TrimSpace(definition)
+		space := strings.Index(definition, " ")
+
+		if space == -1 {
+			definitions[index] = definition
+			continue
+		}
+
+		definitions[index] = definition[:space]
+	}
+
+	return definitions
 }
