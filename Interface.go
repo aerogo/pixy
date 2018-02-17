@@ -67,8 +67,13 @@ func Compile(src string) []*Component {
 		componentParameters := definition[len(componentName)+1 : len(definition)-1]
 		streamFunctionBody := compileChildren(node)
 		parameterNames := extractParameterNames(componentParameters)
-		parameterNamesString := strings.Join(parameterNames, ", ")
-		streamFunctionCall := "stream" + componentName + "(_b, " + parameterNamesString + ")"
+		streamFunctionCall := "stream" + componentName + "(_b"
+
+		if len(parameterNames) > 0 {
+			streamFunctionCall += ", " + strings.Join(parameterNames, ", ")
+		}
+
+		streamFunctionCall += ")"
 		functionBody := "_b := acquireBytesBuffer()\n" + streamFunctionCall + "\npool.Put(_b)\nreturn _b.String()"
 		functionBody = strings.Replace(functionBody, "\n", "\n\t", -1)
 		streamFunctionBody = strings.Replace(streamFunctionBody, "\n", "\n\t", -1)
