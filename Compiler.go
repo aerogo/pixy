@@ -240,7 +240,7 @@ func compileNode(node *codetree.CodeTree) string {
 		var attributeName string
 
 		for index, letter := range remaining {
-			if !unicode.IsLetter(letter) && letter != '-' {
+			if !unicode.IsLetter(letter) && !unicode.IsDigit(letter) && letter != '-' {
 				cursor += index
 				attributeName = node.Line[start:cursor]
 				// fmt.Println("NAME", attributeName)
