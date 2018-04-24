@@ -15,3 +15,6 @@ component Postable
 				if "post.Type()" != "Thread"
 					a.post-tool.post-permalink.ajax(href="post.Link()", title="Permalink")
 						p Icon("link")
+
+			.existing-class(class="additional")
+			.existing-class(class=fmt.Sprintf("additional"))

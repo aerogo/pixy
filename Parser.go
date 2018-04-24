@@ -295,7 +295,13 @@ func compileNode(node *codetree.CodeTree) string {
 	})
 
 	if len(classes) > 0 {
-		attributes["class"] = "\"" + strings.Join(classes, " ") + "\""
+		existingClassList := attributes["class"]
+
+		if existingClassList != "" {
+			attributes["class"] = "\"" + strings.Join(classes, " ") + " \" + " + existingClassList
+		} else {
+			attributes["class"] = "\"" + strings.Join(classes, " ") + "\""
+		}
 	}
 
 	if cursor < len(node.Line) {
