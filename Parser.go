@@ -117,7 +117,20 @@ func compileNode(node *codetree.CodeTree) string {
 		code.WriteString(writeString("<" + keyword + " "))
 		count := 1
 
+		// Attributes
 		for key, value := range attributes {
+			// Attributes without a value
+			if value == "" {
+				code.WriteString(writeString(key))
+
+				if count != numAttributes {
+					code.WriteString(writeString(" "))
+				}
+
+				count++
+				continue
+			}
+
 			code.WriteString(writeString(key + "='"))
 
 			if isString(value) {
@@ -280,6 +293,14 @@ func compileNode(node *codetree.CodeTree) string {
 
 					return false
 				}
+			}
+		} else if char == ',' || char == ')' {
+			// Attribute without a value
+			attributes[attributeName] = ""
+			cursor++
+
+			if char == ',' {
+				return true
 			}
 		}
 
