@@ -5,12 +5,10 @@ import (
 	"os/exec"
 	"path"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 // AddImportPaths adds import paths to the specified file.
-func AddImportPaths(fileOut string) {
+func AddImportPaths(fileOut string) error {
 	cmd := exec.Command("goimports", "-w", fileOut)
 	goimportsErr := cmd.Start()
 
@@ -19,10 +17,11 @@ func AddImportPaths(fileOut string) {
 		goimportsErr = cmd.Start()
 
 		if goimportsErr != nil {
-			color.Red("Couldn't execute goimports")
-			return
+			return goimportsErr
 		}
 	}
+
+	return cmd.Wait()
 }
 
 // extractParameterNames deletes the type information from a comma-separated list of parameters.
