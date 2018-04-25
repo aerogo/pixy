@@ -62,7 +62,11 @@ func compileNode(node *codetree.CodeTree) string {
 			if !strings.HasSuffix(node.Line, ")") {
 				node.Line += "()"
 			}
-			return "stream" + strings.Replace(node.Line, "(", "(_b, ", 1)
+
+			parentheses := strings.Index(node.Line, "(")
+			componentName := node.Line[:parentheses]
+
+			return "stream" + strings.ToLower(componentName) + ".Stream" + strings.Replace(node.Line, "(", "(_b, ", 1)
 		}
 
 		// Go external function call embeds

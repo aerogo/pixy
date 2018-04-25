@@ -64,7 +64,7 @@ func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 		parameterNames := extractParameterNames(componentParameters)
 
 		// streamFunctionCall contains the function call for the streaming version.
-		streamFunctionCall := "stream" + componentName + "(_b"
+		streamFunctionCall := "stream" + strings.ToLower(componentName) + ".Stream" + componentName + "(_b"
 
 		if len(parameterNames) > 0 {
 			streamFunctionCall += ", " + strings.Join(parameterNames, ", ")
@@ -91,33 +91,38 @@ func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 		}
 
 		// Build the component code
-		componentCode := acquireBytesBuffer()
-		componentCode.WriteString(compiler.GetFileHeader())
+		interfaceCode := acquireBytesBuffer()
+		implementationCode := acquireBytesBuffer()
 
 		// Normal function
-		componentCode.WriteString(comment)
-		componentCode.WriteString("\nfunc ")
-		componentCode.WriteString(signature)
-		componentCode.WriteString(" string {\n\t")
-		componentCode.WriteString(functionBody)
-		componentCode.WriteString("\n}")
+		interfaceCode.WriteString(compiler.GetFileHeader())
+		interfaceCode.WriteString(comment)
+		interfaceCode.WriteString("\nfunc ")
+		interfaceCode.WriteString(signature)
+		interfaceCode.WriteString(" string {\n\t")
+		interfaceCode.WriteString(functionBody)
+		interfaceCode.WriteString("\n}")
 
 		// Stream function
-		componentCode.WriteByte('\n')
-		componentCode.WriteString("\nfunc stream")
-		componentCode.WriteString(strings.Replace(signature, "(", "(_b *bytes.Buffer, ", 1))
-		componentCode.WriteString(" {")
-		componentCode.WriteString(optimizedStreamFunctionBody)
-		componentCode.WriteString("}")
+		implementationCode.WriteString("package stream")
+		implementationCode.WriteString(strings.ToLower(componentName))
+		implementationCode.WriteByte('\n')
+		implementationCode.WriteByte('\n')
+		implementationCode.WriteString("\nfunc Stream")
+		implementationCode.WriteString(strings.Replace(signature, "(", "(_b *bytes.Buffer, ", 1))
+		implementationCode.WriteString(" {")
+		implementationCode.WriteString(optimizedStreamFunctionBody)
+		implementationCode.WriteString("}")
 
 		// Add the compiled component to the return values
 		components = append(components, &Component{
-			Name: componentName,
-			Code: componentCode.String(),
+			Name:               componentName,
+			InterfaceCode:      interfaceCode.String(),
+			ImplementationCode: implementationCode.String(),
 		})
 
 		// Allow the byte buffer to be re-used
-		pool.Put(componentCode)
+		pool.Put(interfaceCode)
 	}
 
 	return components, nil
@@ -141,14 +146,15 @@ func (compiler *Compiler) CompileFile(fileIn string) ([]*Component, error) {
 
 // CompileFileAndSaveIn compiles a Pixy template from fileIn
 // and writes the resulting components to dirOut.
-func (compiler *Compiler) CompileFileAndSaveIn(fileIn string, dirOut string) ([]*Component, error) {
+func (compiler *Compiler) CompileFileAndSaveIn(fileIn string, dirOut string) ([]*Component, []string, error) {
 	components, err := compiler.CompileFile(fileIn)
+	files := make([]string, len(components)*2, len(components)*2)
 
-	for _, component := range components {
-		component.Save(dirOut)
+	for index, component := range components {
+		files[index*2], files[index*2+1] = component.Save(dirOut)
 	}
 
-	return components, err
+	return components, files, err
 }
 
 // GetFileHeader returns the file header.
@@ -163,7 +169,6 @@ func (compiler *Compiler) GetUtilities() string {
 import (
 	"sync"
 	"bytes"
-	"fmt"
 )
 
 var pool sync.Pool
@@ -179,11 +184,6 @@ func acquireBytesBuffer() *bytes.Buffer {
 	_b = obj.(*bytes.Buffer)
 	_b.Reset()
 	return _b
-}
-
-// Converts anything into a string
-func toString(v interface{}) string {
-	return fmt.Sprint(v)
 }
 `
 }

@@ -9,8 +9,8 @@ import (
 	"github.com/fatih/color"
 )
 
-// Runs goimports tool on the specified file.
-func goimports(fileOut string) {
+// AddImportPaths adds import paths to the specified file.
+func AddImportPaths(fileOut string) {
 	cmd := exec.Command("goimports", "-w", fileOut)
 	goimportsErr := cmd.Start()
 

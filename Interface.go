@@ -17,6 +17,6 @@ func CompileFile(fileIn string) ([]*Component, error) {
 
 // CompileFileAndSaveIn compiles a Pixy template from fileIn
 // and writes the resulting components to dirOut.
-func CompileFileAndSaveIn(fileIn string, dirOut string) ([]*Component, error) {
+func CompileFileAndSaveIn(fileIn string, dirOut string) ([]*Component, []string, error) {
 	return DefaultCompiler.CompileFileAndSaveIn(fileIn, dirOut)
 }
