@@ -8,12 +8,13 @@ import (
 )
 
 // AddImportPaths adds import paths to the specified file.
-func AddImportPaths(fileOut string) error {
-	cmd := exec.Command("goimports", "-w", fileOut)
+func AddImportPaths(fileOut ...string) error {
+	args := append([]string{"-w"}, fileOut...)
+	cmd := exec.Command("goimports", args...)
 	goimportsErr := cmd.Start()
 
 	if goimportsErr != nil {
-		cmd = exec.Command(os.Getenv("GOPATH"), "bin", path.Join("goimports"), "-w", fileOut)
+		cmd = exec.Command(path.Join(os.Getenv("GOPATH"), "bin", "goimports"), args...)
 		goimportsErr = cmd.Start()
 
 		if goimportsErr != nil {
