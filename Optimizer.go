@@ -48,10 +48,10 @@ func optimize(code string) (optimizedCode string, inlined string) {
 
 	compact := compactCode.ReplaceAllString(strings.Join(lines, "\n"), "\n")
 
-	if lineCount == 1 {
-		inlined = strings.Replace(compact, writeStringCall, "return ", 1)
-		inlined = strings.Replace(inlined, ")\n", "\n", 1)
-	}
+	// if lineCount == 1 {
+	// 	inlined = strings.Replace(compact, writeStringCall, "return ", 1)
+	// 	inlined = strings.Replace(inlined, ")\n", "\n", 1)
+	// }
 
 	return compact, inlined
 }
