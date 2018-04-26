@@ -2,42 +2,27 @@ package pixy
 
 import (
 	"io/ioutil"
-	"os"
 	"path"
-	"strings"
 
 	"github.com/fatih/color"
 )
 
 // Component represents a single, reusable template.
 type Component struct {
-	Name               string
-	InterfaceCode      string
-	ImplementationCode string
+	Name string
+	Code string
 }
 
-// Save writes the component to the given directory.
-func (component *Component) Save(dirOut string) (interfaceFile string, implementationFile string) {
+// Save writes the component to the given directory and returns the file path.
+func (component *Component) Save(dirOut string) string {
 	// Write interface file
-	interfaceFile = path.Join(dirOut, component.Name+".go")
-	writeErr := ioutil.WriteFile(interfaceFile, []byte(component.InterfaceCode), 0644)
+	file := path.Join(dirOut, component.Name+".go")
+	writeErr := ioutil.WriteFile(file, []byte(component.Code), 0644)
 
 	if writeErr != nil {
-		color.Red("Can't write to " + interfaceFile)
+		color.Red("Can't write to " + file)
 		color.Red(writeErr.Error())
 	}
 
-	// Write implementation file
-	packageDirectory := path.Join(dirOut, "stream"+strings.ToLower(component.Name))
-	os.MkdirAll(packageDirectory, 0777)
-
-	implementationFile = path.Join(packageDirectory, component.Name+".go")
-	writeErr = ioutil.WriteFile(implementationFile, []byte(component.ImplementationCode), 0644)
-
-	if writeErr != nil {
-		color.Red("Can't write to " + implementationFile)
-		color.Red(writeErr.Error())
-	}
-
-	return interfaceFile, implementationFile
+	return file
 }
