@@ -48,6 +48,72 @@ func isString(code string) bool {
 	return strings.HasPrefix(code, "\"") && strings.HasSuffix(code, "\"")
 }
 
+// tag returns the code for the tag and its attributes.
+func tag(keyword string, attributes map[string]string) string {
+	code := acquireBytesBuffer()
+
+	if keyword == "html" {
+		code.WriteString(writeString("<!DOCTYPE html>"))
+	}
+
+	numAttributes := len(attributes)
+
+	if numAttributes == 0 {
+		code.WriteString(writeString("<" + keyword + ">"))
+		return code.String()
+	}
+
+	code.WriteString(writeString("<" + keyword + " "))
+	count := 1
+
+	// Attributes
+	for key, value := range attributes {
+		// Attributes without a value
+		if value == "" {
+			code.WriteString(writeString(key))
+
+			if count != numAttributes {
+				code.WriteString(writeString(" "))
+			}
+
+			count++
+			continue
+		}
+
+		code.WriteString(writeString(key + "='"))
+
+		if isString(value) {
+			// Attribute values are enclosed by apostrophes.
+			// Therefore we need to escape this character in the attribute value.
+			code.WriteString(write(strings.Replace(value, "'", "&#39;", -1)))
+		} else {
+			code.WriteString(write("html.EscapeString(fmt.Sprint(" + value + "))"))
+		}
+
+		if count == numAttributes {
+			code.WriteString(writeString("'"))
+		} else {
+			code.WriteString(writeString("' "))
+		}
+
+		count++
+	}
+
+	code.WriteString(writeString(">"))
+	result := code.String()
+	pool.Put(code)
+	return result
+}
+
+// endTag returns the code for the end tag.
+func endTag(keyword string) string {
+	if !selfClosingTags[keyword] {
+		return writeString("</" + keyword + ">")
+	}
+
+	return ""
+}
+
 // Compiles a single codetree.CodeTree.
 func compileNode(node *codetree.CodeTree) string {
 	var keyword string
@@ -101,75 +167,11 @@ func compileNode(node *codetree.CodeTree) string {
 	var contents string
 	attributes := make(map[string]string)
 
-	tag := func() string {
-		code := acquireBytesBuffer()
-
-		if keyword == "html" {
-			code.WriteString(writeString("<!DOCTYPE html>"))
-		}
-
-		numAttributes := len(attributes)
-
-		if numAttributes == 0 {
-			code.WriteString(writeString("<" + keyword + ">"))
-			return code.String()
-		}
-
-		code.WriteString(writeString("<" + keyword + " "))
-		count := 1
-
-		// Attributes
-		for key, value := range attributes {
-			// Attributes without a value
-			if value == "" {
-				code.WriteString(writeString(key))
-
-				if count != numAttributes {
-					code.WriteString(writeString(" "))
-				}
-
-				count++
-				continue
-			}
-
-			code.WriteString(writeString(key + "='"))
-
-			if isString(value) {
-				// Attribute values are enclosed by apostrophes.
-				// Therefore we need to escape this character in the attribute value.
-				code.WriteString(write(strings.Replace(value, "'", "&#39;", -1)))
-			} else {
-				code.WriteString(write("html.EscapeString(fmt.Sprint(" + value + "))"))
-			}
-
-			if count == numAttributes {
-				code.WriteString(writeString("'"))
-			} else {
-				code.WriteString(writeString("' "))
-			}
-
-			count++
-		}
-
-		code.WriteString(writeString(">"))
-		result := code.String()
-		pool.Put(code)
-		return result
-	}
-
-	endTag := func() string {
-		if !selfClosingTags[keyword] {
-			return writeString("</" + keyword + ">")
-		}
-
-		return ""
-	}
-
 	// No contents?
 	if node.Line == keyword {
-		code := tag()
+		code := tag(keyword, attributes)
 		code += compileChildren(node)
-		code += endTag()
+		code += endTag(keyword)
 		return code
 	}
 
@@ -221,6 +223,7 @@ func compileNode(node *codetree.CodeTree) string {
 
 	// Classes
 	var classes []string
+
 	for expect('.', func(start int, remaining string) {
 		endFound := false
 
@@ -332,7 +335,7 @@ func compileNode(node *codetree.CodeTree) string {
 		if node.Line[cursor] == '=' {
 			contents = strings.TrimLeft(node.Line[cursor+1:], " ")
 
-			code := tag()
+			code := tag(keyword, attributes)
 
 			if escapeInput {
 				code += write("html.EscapeString(fmt.Sprint(" + contents + "))")
@@ -341,7 +344,7 @@ func compileNode(node *codetree.CodeTree) string {
 			}
 
 			code += compileChildren(node)
-			code += endTag()
+			code += endTag(keyword)
 			return code
 		}
 
@@ -351,9 +354,9 @@ func compileNode(node *codetree.CodeTree) string {
 		contents = ""
 	}
 
-	code := tag()
+	code := tag(keyword, attributes)
 	code += writeString(contents)
 	code += compileChildren(node)
-	code += endTag()
+	code += endTag(keyword)
 	return code
 }
