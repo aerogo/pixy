@@ -1,11 +1,13 @@
 # Pixy
 
-Pixy compiles Pixy templates to Go code.
+[![Godoc reference][godoc-image]][godoc-url]
+[![Go report card][goreportcard-image]][goreportcard-url]
+[![Travis build][travis-image]][travis-url]
+[![Code coverage][codecov-image]][codecov-url]
+[![License][license-image]][license-url]
 
-## Motivation
-
-* Extremely fast HTML template rendering
-* Less bugs due to type checks
+Pixy compiles `.pixy` templates to native Go code to profit from type system checks and high performance DOM rendering.
+The generated code usually renders templates 300-400% faster than Jade/Pug due to byte buffer pooling and streaming.
 
 ## Syntax
 
@@ -115,3 +117,14 @@ component Hello(person string, magicNumber int)
 ```go
 components := pixy.Compile(src)
 ```
+
+[godoc-image]: https://godoc.org/github.com/aerogo/pixy?status.svg
+[godoc-url]: https://godoc.org/github.com/aerogo/pixy
+[goreportcard-image]: https://goreportcard.com/badge/github.com/aerogo/pixy
+[goreportcard-url]: https://goreportcard.com/report/github.com/aerogo/pixy
+[travis-image]: https://travis-ci.org/aerogo/pixy.svg?branch=master
+[travis-url]: https://travis-ci.org/aerogo/pixy
+[codecov-image]: https://codecov.io/gh/aerogo/pixy/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/aerogo/pixy
+[license-image]: https://img.shields.io/badge/license-MIT-blue.svg
+[license-url]: https://github.com/aerogo/pixy/blob/master/LICENSE
