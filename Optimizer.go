@@ -14,7 +14,7 @@ const (
 
 // init
 func init() {
-	compactCode = regexp.MustCompile("\\n{2,}")
+	compactCode = regexp.MustCompile(`\n{2,}`)
 }
 
 // optimize combines multiple WriteString calls to one.

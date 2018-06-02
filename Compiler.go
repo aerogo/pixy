@@ -28,12 +28,12 @@ func NewCompiler(packageName string) *Compiler {
 // Compile compiles a Pixy template as a string and returns a slice of components.
 func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 	tree, err := codetree.New(src)
-	defer tree.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	defer tree.Close()
 	components := []*Component{}
 
 	for _, node := range tree.Children {
@@ -149,7 +149,7 @@ func (compiler *Compiler) CompileFile(fileIn string) ([]*Component, error) {
 // and writes the resulting components to dirOut.
 func (compiler *Compiler) CompileFileAndSaveIn(fileIn string, dirOut string) ([]*Component, []string, error) {
 	components, err := compiler.CompileFile(fileIn)
-	files := make([]string, len(components), len(components))
+	files := make([]string, len(components))
 
 	for index, component := range components {
 		files[index] = component.Save(dirOut)

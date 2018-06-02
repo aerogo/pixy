@@ -133,12 +133,13 @@ func BenchmarkCopyBytesKL(b *testing.B) {
 // BenchmarkMix ...
 func BenchmarkMix(b *testing.B) {
 	var buffer bytes.Buffer
+	iterations := b.N
 
-	if b.N == 1 {
-		b.N = 2
+	if iterations == 1 {
+		iterations = 2
 	}
 
-	half := b.N / 2
+	half := iterations / 2
 	_l := len(testString) * half
 	_b := make([]byte, _l)
 	_c := 0
@@ -155,7 +156,7 @@ func BenchmarkMix(b *testing.B) {
 
 	str := buffer.String()
 
-	if len(str) != b.N*len(testString) {
+	if len(str) != iterations*len(testString) {
 		fmt.Println("Error BenchmarkMix")
 	}
 }

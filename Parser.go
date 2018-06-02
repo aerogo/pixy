@@ -158,7 +158,7 @@ func compileNode(node *codetree.CodeTree) string {
 	}
 
 	endTag := func() string {
-		if selfClosingTags[keyword] != true {
+		if !selfClosingTags[keyword] {
 			return writeString("</" + keyword + ">")
 		}
 
@@ -243,13 +243,13 @@ func compileNode(node *codetree.CodeTree) string {
 		// Empty loop
 	}
 
-	readOneAttribute := func(start int, remaining string) bool {
+	readOneAttribute := func() bool {
 		for node.Line[cursor] == ' ' {
 			cursor++
 		}
 
-		remaining = node.Line[cursor:]
-		start = cursor
+		remaining := node.Line[cursor:]
+		start := cursor
 
 		var attributeName string
 
@@ -288,11 +288,7 @@ func compileNode(node *codetree.CodeTree) string {
 					attributes[attributeName] = attributeValue
 					cursor++
 
-					if letter == ',' {
-						return true
-					}
-
-					return false
+					return letter == ','
 				}
 			}
 		} else if char == ',' || char == ')' {
@@ -309,10 +305,9 @@ func compileNode(node *codetree.CodeTree) string {
 	}
 
 	// Attributes
-	expect('(', func(start int, remaining string) {
-		for readOneAttribute(start, remaining) != false {
-			start = cursor
-			remaining = node.Line[cursor:]
+	expect('(', func(int, string) {
+		for readOneAttribute() {
+			// ...
 		}
 	})
 
