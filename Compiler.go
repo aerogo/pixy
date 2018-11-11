@@ -37,8 +37,13 @@ func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 	components := []*Component{}
 
 	for _, node := range tree.Children {
+		// Ignore comments
+		if strings.HasPrefix(node.Line, "//") {
+			continue
+		}
+
 		// Disallow tags on the top level
-		if !strings.HasPrefix(node.Line, "component ") && !strings.HasPrefix(node.Line, "//") {
+		if !strings.HasPrefix(node.Line, "component ") {
 			color.Yellow(node.Line)
 			color.Red("Only 'component' definitions are allowed on the top level.")
 			continue
