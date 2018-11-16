@@ -1,6 +1,7 @@
 package pixy
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 
@@ -160,6 +161,16 @@ func compileNode(node *codetree.CodeTree) string {
 
 	// Each is just syntax sugar
 	if keyword == "each" {
+		// Each with reversed order
+		if strings.HasSuffix(node.Line, " reversed") {
+			line := strings.TrimSuffix(node.Line, " reversed")
+			inIndex := strings.Index(line, " in ")
+			sliceName := line[inIndex+len(" in "):]
+			iteratorName := line[len("each "):inIndex]
+
+			return fmt.Sprintf("{\n_s := %s\nfor _i := len(_s)-1; _i >= 0; _i-- {\n%s := _s[_i]\n%s}\n}", sliceName, iteratorName, compileChildren(node))
+		}
+
 		// TODO: This is a just quick prototype implementation and not correct at all
 		return strings.Replace(strings.Replace(node.Line, "each", "for _, ", 1), " in ", " := range ", 1) + " {\n" + compileChildren(node) + "}"
 	}
