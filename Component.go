@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"path"
 
-	"github.com/fatih/color"
+	"github.com/blitzprog/color"
 )
 
 // Component represents a single, reusable template.

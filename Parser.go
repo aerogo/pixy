@@ -6,7 +6,7 @@ import (
 	"unicode"
 
 	"github.com/aerogo/codetree"
-	"github.com/fatih/color"
+	"github.com/blitzprog/color"
 )
 
 // Compiles the children of a Pixy CodeTree.

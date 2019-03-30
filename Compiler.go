@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/aerogo/codetree"
-	"github.com/fatih/color"
+	"github.com/blitzprog/color"
 )
 
 // DefaultCompiler is the default compiler used by the interface.
