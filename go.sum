@@ -1,5 +1,7 @@
 github.com/aerogo/codetree v1.0.0 h1:1KV5Cu9EU+YyyAjC6yh+G9mDGFPfZM16gw/xg88oSqI=
 github.com/aerogo/codetree v1.0.0/go.mod h1:TC8l+8PDZMXx6JrM2DgFxRIRlZ1HZLnjfkFjdbw5xwE=
+github.com/aerogo/codetree v1.0.1 h1:HZfP8PgFliTMqddI0CmpPBupoO7R3jn45MgJLWGf2N4=
+github.com/aerogo/codetree v1.0.1/go.mod h1:l71IjzB++0b7CiMKrDlzPt+6OTFnYvOpCVavEsaIWuA=
 github.com/blitzprog/color v1.8.0 h1:57b411KxdU2PpTMUWzxvm8FNwFSZCub9iAHyynlshEY=
 github.com/blitzprog/color v1.8.0/go.mod h1:BT0yhtwPpduwijxx6kUHHv79qgJyuLdOehYyeL6Y2b4=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
