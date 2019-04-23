@@ -1,9 +1,11 @@
-github.com/aerogo/codetree v1.0.0 h1:1KV5Cu9EU+YyyAjC6yh+G9mDGFPfZM16gw/xg88oSqI=
-github.com/aerogo/codetree v1.0.0/go.mod h1:TC8l+8PDZMXx6JrM2DgFxRIRlZ1HZLnjfkFjdbw5xwE=
-github.com/blitzprog/color v1.8.0 h1:57b411KxdU2PpTMUWzxvm8FNwFSZCub9iAHyynlshEY=
-github.com/blitzprog/color v1.8.0/go.mod h1:BT0yhtwPpduwijxx6kUHHv79qgJyuLdOehYyeL6Y2b4=
+github.com/aerogo/codetree v1.0.2 h1:1kRYDY098UjFj7sbJjM5RoGS3rIS5Hb/xoU0p8WaNQg=
+github.com/aerogo/codetree v1.0.2/go.mod h1:l71IjzB++0b7CiMKrDlzPt+6OTFnYvOpCVavEsaIWuA=
+github.com/akyoto/color v1.8.1 h1:HpoHQMGnBYZNpNuayXDKJMlGKvbvGipLYRtGV24SOgM=
+github.com/akyoto/color v1.8.1/go.mod h1:M0u9nnLt9zM2qp08X40EVVFeR+FgNI2NG0InuiDBTQ0=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/mattn/go-colorable v0.1.1 h1:G1f5SKeVxmagw/IyvzvtZE4Gybcc4Tr1tf7I8z0XgOg=
 github.com/mattn/go-colorable v0.1.1/go.mod h1:FuOcm+DKB9mbwrcAfNl7/TZVBZ6rcnceauSikq3lYCQ=
 github.com/mattn/go-isatty v0.0.5/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
@@ -18,3 +20,5 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223 h1:DH4skfRX4EBpamg7iV4ZlCpblAHI6s6TDM39bFZumv8=
 golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/sys v0.0.0-20190419153524-e8e3143a4f4a h1:XCr/YX7O0uxRkLq2k1ApNQMims9eCioF9UpzIPBDmuo=
+golang.org/x/sys v0.0.0-20190419153524-e8e3143a4f4a/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

@@ -4,20 +4,20 @@ import (
 	"io/ioutil"
 	"path"
 
-	"github.com/blitzprog/color"
+	"github.com/akyoto/color"
 )
 
 // Component represents a single, reusable template.
 type Component struct {
 	Name string
-	Code string
+	Code []byte
 }
 
 // Save writes the component to the given directory and returns the file path.
 func (component *Component) Save(dirOut string) string {
 	// Write interface file
 	file := path.Join(dirOut, component.Name+".go")
-	writeErr := ioutil.WriteFile(file, []byte(component.Code), 0644)
+	writeErr := ioutil.WriteFile(file, component.Code, 0644)
 
 	if writeErr != nil {
 		color.Red("Can't write to " + file)

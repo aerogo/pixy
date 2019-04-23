@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/aerogo/codetree"
-	"github.com/blitzprog/color"
+	"github.com/akyoto/color"
 )
 
 // DefaultCompiler is the default compiler used by the interface.
@@ -108,13 +108,8 @@ func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 		code.WriteString("\n}")
 
 		// Stream function
-		// interfaceCode.WriteString("package stream")
-		// interfaceCode.WriteString(strings.ToLower(componentName))
 		code.WriteByte('\n')
 		code.WriteByte('\n')
-		// code.WriteString("// stream")
-		// code.WriteString(componentName)
-		// code.WriteString(" ...\n")
 		code.WriteString("func stream")
 		code.WriteString(strings.Replace(signature, "(", "(_b *bytes.Buffer, ", 1))
 		code.WriteString(" {")
@@ -124,7 +119,7 @@ func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 		// Add the compiled component to the return values
 		components = append(components, &Component{
 			Name: componentName,
-			Code: code.String(),
+			Code: code.Bytes(),
 		})
 
 		// Allow the byte buffer to be re-used
