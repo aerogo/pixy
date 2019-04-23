@@ -145,19 +145,6 @@ func (compiler *Compiler) CompileFile(fileIn string) ([]*Component, error) {
 	return compiler.CompileBytes(src)
 }
 
-// CompileFileAndSaveIn compiles a Pixy template from fileIn
-// and writes the resulting components to dirOut.
-func (compiler *Compiler) CompileFileAndSaveIn(fileIn string, dirOut string) ([]*Component, []string, error) {
-	components, err := compiler.CompileFile(fileIn)
-	files := make([]string, len(components))
-
-	for index, component := range components {
-		files[index] = component.Save(dirOut)
-	}
-
-	return components, files, err
-}
-
 // GetFileHeader returns the file header.
 func (compiler *Compiler) GetFileHeader() string {
 	return "package " + compiler.PackageName + "\n"
