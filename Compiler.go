@@ -119,7 +119,7 @@ func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 		// Add the compiled component to the return values
 		components = append(components, &Component{
 			Name: componentName,
-			Code: code.Bytes(),
+			Code: code.String(),
 		})
 
 		// Allow the byte buffer to be re-used
@@ -147,7 +147,7 @@ func (compiler *Compiler) CompileFile(fileIn string) ([]*Component, error) {
 
 // GetFileHeader returns the file header.
 func (compiler *Compiler) GetFileHeader() string {
-	return "package " + compiler.PackageName + "\n"
+	return "package " + compiler.PackageName + "\n\n"
 }
 
 // GetUtilities returns the file header and utility functions
