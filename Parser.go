@@ -7,6 +7,7 @@ import (
 
 	"github.com/aerogo/codetree"
 	"github.com/akyoto/color"
+	"github.com/akyoto/ignore"
 )
 
 // Compiles the children of a Pixy CodeTree.
@@ -282,10 +283,10 @@ func compileNode(node *codetree.CodeTree) string {
 			cursor++
 			start = cursor
 			remaining = node.Line[cursor:]
+			reader := ignore.Reader{}
 
-			var ignore ignoreReader
 			for index, letter := range remaining {
-				if ignore.canIgnore(letter) {
+				if reader.CanIgnore(letter) {
 					continue
 				}
 

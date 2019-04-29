@@ -4,6 +4,10 @@ go:
   - 1.12.x
   - master
 
+env:
+  global:
+    - GO111MODULE=on
+
 install: true
 
 matrix:
