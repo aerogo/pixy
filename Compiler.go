@@ -155,8 +155,8 @@ func (compiler *Compiler) GetFileHeader() string {
 func (compiler *Compiler) GetUtilities() string {
 	return compiler.GetFileHeader() + `
 import (
+	"strings"
 	"sync"
-	"bytes"
 )
 
 var pool sync.Pool
