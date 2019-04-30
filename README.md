@@ -1,9 +1,9 @@
 # Pixy
 
-[![Godoc reference][godoc-image]][godoc-url]
-[![Go report card][goreportcard-image]][goreportcard-url]
-[![Travis build][travis-image]][travis-url]
-[![Code coverage][codecov-image]][codecov-url]
+[![Reference][godoc-image]][godoc-url]
+[![Report][report-image]][report-url]
+[![Tests][tests-image]][tests-url]
+[![Coverage][codecov-image]][codecov-url]
 [![License][license-image]][license-url]
 
 Pixy compiles `.pixy` templates to native Go code to profit from type system checks and high performance DOM rendering.
@@ -126,11 +126,11 @@ components := pixy.Compile(src)
 
 [godoc-image]: https://godoc.org/github.com/aerogo/pixy?status.svg
 [godoc-url]: https://godoc.org/github.com/aerogo/pixy
-[goreportcard-image]: https://goreportcard.com/badge/github.com/aerogo/pixy
-[goreportcard-url]: https://goreportcard.com/report/github.com/aerogo/pixy
-[travis-image]: https://travis-ci.org/aerogo/pixy.svg?branch=master
-[travis-url]: https://travis-ci.org/aerogo/pixy
-[codecov-image]: https://codecov.io/gh/aerogo/pixy/branch/master/graph/badge.svg
+[report-image]: https://goreportcard.com/badge/github.com/aerogo/pixy
+[report-url]: https://goreportcard.com/report/github.com/aerogo/pixy
+[tests-image]: https://cloud.drone.io/api/badges/aerogo/pixy/status.svg
+[tests-url]: https://cloud.drone.io/aerogo/pixy
+[codecov-image]: https://codecov.io/gh/aerogo/pixy/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/aerogo/pixy
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg
 [license-url]: https://github.com/aerogo/pixy/blob/master/LICENSE
