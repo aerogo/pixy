@@ -10,7 +10,7 @@ import (
 func main() {
 	defer profile.Start(profile.MemProfile).Stop()
 
-	src, _ := ioutil.ReadFile("examples/post-benchmark.pixy")
+	src, _ := ioutil.ReadFile("testdata/post-benchmark.pixy")
 	code := string(src)
 
 	for i := 0; i < 100000000; i++ {
