@@ -177,6 +177,6 @@ func acquireBytesBuffer() *bytes.Buffer {
 }
 
 // SaveUtilities adds the file with required function definitions to the directory.
-func (compiler *Compiler) SaveUtilities(filePath string) {
-	ioutil.WriteFile(filePath, []byte(compiler.GetUtilities()), 0644)
+func (compiler *Compiler) SaveUtilities(filePath string) error {
+	return ioutil.WriteFile(filePath, []byte(compiler.GetUtilities()), 0644)
 }

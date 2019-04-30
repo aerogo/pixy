@@ -14,6 +14,10 @@ func main() {
 	code := string(src)
 
 	for i := 0; i < 100000000; i++ {
-		pixy.Compile(code)
+		_, err := pixy.Compile(code)
+
+		if err != nil {
+			panic(err)
+		}
 	}
 }

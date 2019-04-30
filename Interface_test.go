@@ -34,7 +34,11 @@ func BenchmarkCompile(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			pixy.Compile(code)
+			_, err := pixy.Compile(code)
+
+			if err != nil {
+				b.Fail()
+			}
 		}
 	})
 }
