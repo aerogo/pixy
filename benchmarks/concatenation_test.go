@@ -1,7 +1,6 @@
 package pixy
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"testing"
@@ -28,7 +27,7 @@ func BenchmarkJoin(b *testing.B) {
 
 // BenchmarkWrite ...
 func BenchmarkWrite(b *testing.B) {
-	var buffer bytes.Buffer
+	var buffer strings.Builder
 
 	for n := 0; n < b.N; n++ {
 		buffer.Write(testBytes)
@@ -43,7 +42,7 @@ func BenchmarkWrite(b *testing.B) {
 
 // BenchmarkWriteString ...
 func BenchmarkWriteString(b *testing.B) {
-	var buffer bytes.Buffer
+	var buffer strings.Builder
 
 	for n := 0; n < b.N; n++ {
 		buffer.WriteString(testString)
@@ -58,7 +57,7 @@ func BenchmarkWriteString(b *testing.B) {
 
 // BenchmarkWriteStringKL ...
 func BenchmarkWriteStringKL(b *testing.B) {
-	var buffer bytes.Buffer
+	var buffer strings.Builder
 	buffer.Grow(b.N)
 
 	for n := 0; n < b.N; n++ {
@@ -132,7 +131,7 @@ func BenchmarkCopyBytesKL(b *testing.B) {
 
 // BenchmarkMix ...
 func BenchmarkMix(b *testing.B) {
-	var buffer bytes.Buffer
+	var buffer strings.Builder
 	iterations := b.N
 
 	if iterations == 1 {

@@ -52,7 +52,7 @@ func isString(code string) bool {
 
 // tag returns the code for the tag and its attributes.
 func tag(keyword string, attributes map[string]string) string {
-	code := acquireBytesBuffer()
+	code := acquireStringsBuilder()
 
 	if keyword == "html" {
 		code.WriteString(writeString("<!DOCTYPE html>"))

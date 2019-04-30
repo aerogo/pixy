@@ -2,11 +2,15 @@ package pixy
 
 import (
 	"bytes"
+	"strings"
 	"sync"
 	"testing"
 )
 
-var poolBuffers sync.Pool
+var (
+	poolBuffers  sync.Pool
+	poolBuilders sync.Pool
+)
 
 func acquireBytesBuffer() *bytes.Buffer {
 	var _b *bytes.Buffer
@@ -21,12 +25,25 @@ func acquireBytesBuffer() *bytes.Buffer {
 	return _b
 }
 
-func BenchmarkA1(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		_1 := "unknown string"
-		_2 := "another string"
-		_3 := "yet another string"
+func acquireStringsBuilder() *strings.Builder {
+	var _b *strings.Builder
+	obj := poolBuilders.Get()
 
+	if obj == nil {
+		return &strings.Builder{}
+	}
+
+	_b = obj.(*strings.Builder)
+	_b.Reset()
+	return _b
+}
+
+func BenchmarkA1(b *testing.B) {
+	_1 := "unknown string"
+	_2 := "another string"
+	_3 := "yet another string"
+
+	for n := 0; n < b.N; n++ {
 		_b := make([]byte, len(_1)+len(_2)+len(_3))
 		_l := 0
 
@@ -39,17 +56,16 @@ func BenchmarkA1(b *testing.B) {
 }
 
 func BenchmarkA2(b *testing.B) {
+	_s := [3]string{}
+	_i := 0
+
+	_s[_i] = "unknown string"
+	_i++
+	_s[_i] = "another string"
+	_i++
+	_s[_i] = "yet another string"
+
 	for n := 0; n < b.N; n++ {
-		_s := [3]string{}
-		_i := 0
-
-		_s[_i] = "unknown string"
-		_i++
-		_s[_i] = "another string"
-		_i++
-		_s[_i] = "yet another string"
-		_i++
-
 		_b := make([]byte, len(_s[0])+len(_s[1])+len(_s[2]))
 		_l := 0
 
@@ -62,46 +78,89 @@ func BenchmarkA2(b *testing.B) {
 }
 
 func BenchmarkA3(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		a := "unknown string"
-		b := "another string"
-		c := "yet another string"
+	_1 := "unknown string"
+	_2 := "another string"
+	_3 := "yet another string"
 
+	for n := 0; n < b.N; n++ {
 		var buffer bytes.Buffer
-		buffer.WriteString(a)
-		buffer.WriteString(b)
-		buffer.WriteString(c)
+		buffer.WriteString(_1)
+		buffer.WriteString(_2)
+		buffer.WriteString(_3)
 		_ = buffer.String()
 	}
 }
 
 func BenchmarkA4(b *testing.B) {
+	_1 := "unknown string"
+	_2 := "another string"
+	_3 := "yet another string"
+
 	for n := 0; n < b.N; n++ {
-		a := "unknown string"
-		b := "another string"
-		c := "yet another string"
-
 		var buffer bytes.Buffer
-		buffer.Grow(len(a) + len(b) + len(c))
+		buffer.Grow(len(_1) + len(_2) + len(_3))
 
-		buffer.WriteString(a)
-		buffer.WriteString(b)
-		buffer.WriteString(c)
+		buffer.WriteString(_1)
+		buffer.WriteString(_2)
+		buffer.WriteString(_3)
 		_ = buffer.String()
 	}
 }
 
 func BenchmarkA5(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		a := "unknown string"
-		b := "another string"
-		c := "yet another string"
+	_1 := "unknown string"
+	_2 := "another string"
+	_3 := "yet another string"
 
+	for n := 0; n < b.N; n++ {
 		buffer := acquireBytesBuffer()
-		buffer.WriteString(a)
-		buffer.WriteString(b)
-		buffer.WriteString(c)
+		buffer.WriteString(_1)
+		buffer.WriteString(_2)
+		buffer.WriteString(_3)
 		_ = buffer.String()
 		poolBuffers.Put(buffer)
+	}
+}
+
+func BenchmarkA6(b *testing.B) {
+	_1 := "unknown string"
+	_2 := "another string"
+	_3 := "yet another string"
+
+	for n := 0; n < b.N; n++ {
+		var buffer bytes.Buffer
+		buffer.WriteString(_1)
+		buffer.WriteString(_2)
+		buffer.WriteString(_3)
+		_ = buffer.String()
+	}
+}
+
+func BenchmarkA7(b *testing.B) {
+	_1 := "unknown string"
+	_2 := "another string"
+	_3 := "yet another string"
+
+	for n := 0; n < b.N; n++ {
+		builder := acquireStringsBuilder()
+		builder.WriteString(_1)
+		builder.WriteString(_2)
+		builder.WriteString(_3)
+		_ = builder.String()
+		poolBuilders.Put(builder)
+	}
+}
+
+func BenchmarkA8(b *testing.B) {
+	_1 := "unknown string"
+	_2 := "another string"
+	_3 := "yet another string"
+
+	for n := 0; n < b.N; n++ {
+		var builder strings.Builder
+		builder.WriteString(_1)
+		builder.WriteString(_2)
+		builder.WriteString(_3)
+		_ = builder.String()
 	}
 }

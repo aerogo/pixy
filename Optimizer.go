@@ -1,7 +1,6 @@
 package pixy
 
 import (
-	"bytes"
 	"regexp"
 	"strings"
 )
@@ -20,7 +19,7 @@ func init() {
 // optimize combines multiple WriteString calls to one.
 func optimize(code string) (optimizedCode string, inlined string) {
 	lines := strings.Split(code, "\n")
-	var lastString bytes.Buffer
+	var lastString strings.Builder
 
 	// Count the actual code lines
 	lineCount := 0

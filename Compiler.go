@@ -91,12 +91,12 @@ func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 		if inlined != "" {
 			functionBody = strings.TrimSpace(inlined)
 		} else {
-			functionBody = "_b := acquireBytesBuffer()\n" + streamFunctionCall + "\npool.Put(_b)\nreturn _b.String()"
+			functionBody = "_b := acquireStringsBuilder()\n" + streamFunctionCall + "\npool.Put(_b)\nreturn _b.String()"
 			functionBody = strings.Replace(functionBody, "\n", "\n\t", -1)
 		}
 
 		// Build the component code
-		code := acquireBytesBuffer()
+		code := acquireStringsBuilder()
 
 		// Normal function
 		code.WriteString(compiler.GetFileHeader())
@@ -111,7 +111,7 @@ func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 		code.WriteByte('\n')
 		code.WriteByte('\n')
 		code.WriteString("func stream")
-		code.WriteString(strings.Replace(signature, "(", "(_b *bytes.Buffer, ", 1))
+		code.WriteString(strings.Replace(signature, "(", "(_b *strings.Builder, ", 1))
 		code.WriteString(" {")
 		code.WriteString(optimizedStreamFunctionBody)
 		code.WriteString("}")
@@ -161,15 +161,15 @@ import (
 
 var pool sync.Pool
 
-func acquireBytesBuffer() *bytes.Buffer {
-	var _b *bytes.Buffer
+func acquireStringsBuilder() *strings.Builder {
+	var _b *strings.Builder
 	obj := pool.Get()
 
 	if obj == nil {
-		return &bytes.Buffer{}
+		return &strings.Builder{}
 	}
 
-	_b = obj.(*bytes.Buffer)
+	_b = obj.(*strings.Builder)
 	_b.Reset()
 	return _b
 }
