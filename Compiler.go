@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/aerogo/codetree"
@@ -143,13 +144,13 @@ func (compiler *Compiler) CompileString(src string) ([]*Component, error) {
 
 // CompileFile compiles a Pixy template read from a file and returns a slice of components.
 func (compiler *Compiler) CompileFile(fileIn string) ([]*Component, error) {
-	src, err := ioutil.ReadFile(fileIn)
+	reader, err := os.Open(fileIn)
 
 	if err != nil {
 		return nil, errors.New("Can't read from " + fileIn + "\n" + err.Error())
 	}
 
-	return compiler.CompileBytes(src)
+	return compiler.Compile(reader)
 }
 
 // GetFileHeader returns the file header.
