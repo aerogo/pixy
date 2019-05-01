@@ -1,8 +1,15 @@
 package pixy
 
-// Compile compiles a Pixy template as a string and returns a slice of components.
-func Compile(src string) ([]*Component, error) {
-	return DefaultCompiler.Compile(src)
+import "io"
+
+// Compile compiles a Pixy template as a reader and returns a slice of components.
+func Compile(reader io.Reader) ([]*Component, error) {
+	return DefaultCompiler.Compile(reader)
+}
+
+// CompileString compiles a Pixy template as a byte slice and returns a slice of components.
+func CompileString(src string) ([]*Component, error) {
+	return DefaultCompiler.CompileString(src)
 }
 
 // CompileBytes compiles a Pixy template as a byte slice and returns a slice of components.

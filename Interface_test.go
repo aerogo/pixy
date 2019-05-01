@@ -2,6 +2,7 @@ package pixy_test
 
 import (
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/aerogo/pixy"
@@ -9,10 +10,21 @@ import (
 )
 
 func TestCompile(t *testing.T) {
+	file, err := os.Open("testdata/post-benchmark.pixy")
+	assert.NoError(t, err)
+	defer file.Close()
+
+	components, err := pixy.Compile(file)
+	assert.NoError(t, err)
+	assert.NotNil(t, components)
+	assert.Len(t, components, 1)
+}
+
+func TestCompileString(t *testing.T) {
 	src, _ := ioutil.ReadFile("testdata/post-benchmark.pixy")
 	code := string(src)
 
-	components, err := pixy.Compile(code)
+	components, err := pixy.CompileString(code)
 	assert.NoError(t, err)
 	assert.NotNil(t, components)
 	assert.Len(t, components, 1)
@@ -25,7 +37,7 @@ func TestCompileFile(t *testing.T) {
 	assert.Len(t, components, 1)
 }
 
-func BenchmarkCompile(b *testing.B) {
+func BenchmarkCompileString(b *testing.B) {
 	src, _ := ioutil.ReadFile("testdata/post-benchmark.pixy")
 	code := string(src)
 
@@ -34,7 +46,7 @@ func BenchmarkCompile(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_, err := pixy.Compile(code)
+			_, err := pixy.CompileString(code)
 
 			if err != nil {
 				b.Fail()

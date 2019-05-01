@@ -1,7 +1,9 @@
 package pixy
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"io/ioutil"
 	"strings"
 
@@ -26,8 +28,8 @@ func NewCompiler(packageName string) *Compiler {
 }
 
 // Compile compiles a Pixy template as a string and returns a slice of components.
-func (compiler *Compiler) Compile(src string) ([]*Component, error) {
-	tree, err := codetree.New(src)
+func (compiler *Compiler) Compile(reader io.Reader) ([]*Component, error) {
+	tree, err := codetree.New(reader)
 
 	if err != nil {
 		return nil, err
@@ -131,7 +133,12 @@ func (compiler *Compiler) Compile(src string) ([]*Component, error) {
 
 // CompileBytes compiles a Pixy template as a byte slice and returns a slice of components.
 func (compiler *Compiler) CompileBytes(src []byte) ([]*Component, error) {
-	return compiler.Compile(string(src))
+	return compiler.Compile(bytes.NewReader(src))
+}
+
+// CompileString compiles a Pixy template as a string and returns a slice of components.
+func (compiler *Compiler) CompileString(src string) ([]*Component, error) {
+	return compiler.Compile(strings.NewReader(src))
 }
 
 // CompileFile compiles a Pixy template read from a file and returns a slice of components.
