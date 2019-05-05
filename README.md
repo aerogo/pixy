@@ -9,6 +9,10 @@
 Pixy compiles `.pixy` templates to native Go code to profit from type system checks and high performance DOM rendering.
 The generated code usually renders templates 300-400% faster than Jade/Pug due to byte buffer pooling and streaming.
 
+## CLI
+
+If you're looking for the official compiler, please install [pack](https://github.com/aerogo/pack).
+
 ## Syntax
 
 A pixy template is a collection of components.
