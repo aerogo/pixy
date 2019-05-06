@@ -8,5 +8,5 @@ require (
 	github.com/akyoto/ignore v1.0.1
 	github.com/pkg/profile v1.3.0
 	github.com/stretchr/testify v1.3.0
-	golang.org/x/sys v0.0.0-20190429190828-d89cdac9e872 // indirect
+	golang.org/x/sys v0.0.0-20190502175342-a43fa875dd82 // indirect
 )
