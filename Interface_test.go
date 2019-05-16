@@ -20,6 +20,15 @@ func TestCompile(t *testing.T) {
 	assert.Len(t, components, 1)
 }
 
+func TestCompileBytes(t *testing.T) {
+	code, _ := ioutil.ReadFile("testdata/post-benchmark.pixy")
+
+	components, err := pixy.CompileBytes(code)
+	assert.NoError(t, err)
+	assert.NotNil(t, components)
+	assert.Len(t, components, 1)
+}
+
 func TestCompileString(t *testing.T) {
 	src, _ := ioutil.ReadFile("testdata/post-benchmark.pixy")
 	code := string(src)

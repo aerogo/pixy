@@ -94,7 +94,7 @@ func (compiler *Compiler) Compile(reader io.Reader) ([]*Component, error) {
 		if inlined != "" {
 			functionBody = strings.TrimSpace(inlined)
 		} else {
-			functionBody = "_b := acquireStringsBuilder()\n" + streamFunctionCall + "\npool.Put(_b)\nreturn _b.String()"
+			functionBody = "_b := acquireStringsBuilder()\n" + streamFunctionCall + "\n_pool.Put(_b)\nreturn _b.String()"
 			functionBody = strings.Replace(functionBody, "\n", "\n\t", -1)
 		}
 
@@ -167,19 +167,16 @@ import (
 	"sync"
 )
 
-var pool sync.Pool
+var _pool = sync.Pool{
+	New: func() interface{} {
+		return &strings.Builder{}
+	},
+}
 
 func acquireStringsBuilder() *strings.Builder {
-	var _b *strings.Builder
-	obj := pool.Get()
-
-	if obj == nil {
-		return &strings.Builder{}
-	}
-
-	_b = obj.(*strings.Builder)
-	_b.Reset()
-	return _b
+	builder := _pool.Get().(*strings.Builder)
+	builder.Reset()
+	return builder
 }
 `
 }
