@@ -5,21 +5,16 @@ import (
 	"strings"
 )
 
-var compactCode *regexp.Regexp
+var compactCode = regexp.MustCompile(`\n{2,}`)
 
 const (
 	writeStringCall = "_b.WriteString("
 )
 
-// init
-func init() {
-	compactCode = regexp.MustCompile(`\n{2,}`)
-}
-
 // optimize combines multiple WriteString calls to one.
 func optimize(code string) (optimizedCode string, inlined string) {
 	lines := strings.Split(code, "\n")
-	var lastString strings.Builder
+	lastString := strings.Builder{}
 
 	// Count the actual code lines
 	lineCount := 0
@@ -46,11 +41,5 @@ func optimize(code string) (optimizedCode string, inlined string) {
 	}
 
 	compact := compactCode.ReplaceAllString(strings.Join(lines, "\n"), "\n")
-
-	// if lineCount == 1 {
-	// 	inlined = strings.Replace(compact, writeStringCall, "return ", 1)
-	// 	inlined = strings.Replace(inlined, ")\n", "\n", 1)
-	// }
-
 	return compact, inlined
 }

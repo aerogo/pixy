@@ -116,10 +116,28 @@ component Hello(person string, magicNumber int)
 	p= magicNumber
 ```
 
+Iterate over a slice:
+
+```jade
+component ToDo(items []string)
+	ul
+		each item in items
+			li= item
+```
+
+Iterate over a slice in reversed order:
+
+```jade
+component ToDo(items []string)
+	ul
+		each item in items reversed
+			li= item
+```
+
 ## API
 
 ```go
-components := pixy.Compile(src)
+components, err := pixy.Compile(src)
 ```
 
 ## Style
