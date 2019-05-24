@@ -130,6 +130,25 @@ component ToDo(items []string)
 			li= item
 ```
 
+For loops (`each` is just syntactical sugar):
+
+```jade
+component ToDo(items []string)
+	ul
+		for _, item := range items
+			li= item
+```
+
+If conditions:
+
+```jade
+component Condition(ok bool)
+	if ok
+		h1 Yes!
+	else
+		h1 No!
+```
+
 ## API
 
 ```go
