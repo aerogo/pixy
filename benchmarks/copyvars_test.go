@@ -7,6 +7,12 @@ import (
 	"testing"
 )
 
+const (
+	_1 = "unknown string"
+	_2 = "another string"
+	_3 = "yet another string"
+)
+
 var (
 	poolBuffers  sync.Pool
 	poolBuilders sync.Pool
@@ -39,10 +45,6 @@ func acquireStringsBuilder() *strings.Builder {
 }
 
 func BenchmarkA1(b *testing.B) {
-	_1 := "unknown string"
-	_2 := "another string"
-	_3 := "yet another string"
-
 	for n := 0; n < b.N; n++ {
 		_b := make([]byte, len(_1)+len(_2)+len(_3))
 		_l := 0
@@ -59,11 +61,11 @@ func BenchmarkA2(b *testing.B) {
 	_s := [3]string{}
 	_i := 0
 
-	_s[_i] = "unknown string"
+	_s[_i] = _1
 	_i++
-	_s[_i] = "another string"
+	_s[_i] = _2
 	_i++
-	_s[_i] = "yet another string"
+	_s[_i] = _3
 
 	for n := 0; n < b.N; n++ {
 		_b := make([]byte, len(_s[0])+len(_s[1])+len(_s[2]))
@@ -78,10 +80,6 @@ func BenchmarkA2(b *testing.B) {
 }
 
 func BenchmarkA3(b *testing.B) {
-	_1 := "unknown string"
-	_2 := "another string"
-	_3 := "yet another string"
-
 	for n := 0; n < b.N; n++ {
 		var buffer bytes.Buffer
 		buffer.WriteString(_1)
@@ -92,10 +90,6 @@ func BenchmarkA3(b *testing.B) {
 }
 
 func BenchmarkA4(b *testing.B) {
-	_1 := "unknown string"
-	_2 := "another string"
-	_3 := "yet another string"
-
 	for n := 0; n < b.N; n++ {
 		var buffer bytes.Buffer
 		buffer.Grow(len(_1) + len(_2) + len(_3))
@@ -108,10 +102,6 @@ func BenchmarkA4(b *testing.B) {
 }
 
 func BenchmarkA5(b *testing.B) {
-	_1 := "unknown string"
-	_2 := "another string"
-	_3 := "yet another string"
-
 	for n := 0; n < b.N; n++ {
 		buffer := acquireBytesBuffer()
 		buffer.WriteString(_1)
@@ -123,10 +113,6 @@ func BenchmarkA5(b *testing.B) {
 }
 
 func BenchmarkA6(b *testing.B) {
-	_1 := "unknown string"
-	_2 := "another string"
-	_3 := "yet another string"
-
 	for n := 0; n < b.N; n++ {
 		var buffer bytes.Buffer
 		buffer.WriteString(_1)
@@ -137,10 +123,6 @@ func BenchmarkA6(b *testing.B) {
 }
 
 func BenchmarkA7(b *testing.B) {
-	_1 := "unknown string"
-	_2 := "another string"
-	_3 := "yet another string"
-
 	for n := 0; n < b.N; n++ {
 		builder := acquireStringsBuilder()
 		builder.WriteString(_1)
@@ -152,10 +134,6 @@ func BenchmarkA7(b *testing.B) {
 }
 
 func BenchmarkA8(b *testing.B) {
-	_1 := "unknown string"
-	_2 := "another string"
-	_3 := "yet another string"
-
 	for n := 0; n < b.N; n++ {
 		var builder strings.Builder
 		builder.WriteString(_1)
