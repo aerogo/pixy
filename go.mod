@@ -3,10 +3,9 @@ module github.com/aerogo/pixy
 go 1.12
 
 require (
-	github.com/aerogo/codetree v1.2.6
-	github.com/akyoto/color v1.8.5
-	github.com/akyoto/ignore v1.0.2
+	github.com/aerogo/codetree v1.2.9
+	github.com/akyoto/assert v0.2.0
+	github.com/akyoto/color v1.8.7
+	github.com/akyoto/ignore v1.0.4
 	github.com/pkg/profile v1.3.0
-	github.com/stretchr/testify v1.3.0
-	golang.org/x/sys v0.0.0-20190608050228-5b15430b70e3 // indirect
 )
